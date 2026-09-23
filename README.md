@@ -24,8 +24,11 @@ All editable text and links live in the `content/` folder. You do not need to to
 | Club name, tagline, contact email | `content/site.ts` |
 | Join survey link, calendar embed, social links | `content/links.ts` |
 | Board members (name, role, bio, photo) | `content/board.ts` |
+| Logo (header) | Replace `public/brand/logo.png` with a same-named file, or change the path in `content/site.ts` |
+| Favicon (browser tab) | Replace `src/app/favicon.ico` |
+| Brand colors | `src/app/globals.css`, the `--color-brand-*` values |
 
-A link set to `null` is hidden or disabled on the site. Only add a board member's name, bio or photo with that person's consent. Board photos go in `public/board/`.
+A link set to `null` is hidden or disabled on the site. Only add a board member's name, bio or photo with that person's consent. Board photos go in `public/board/`. See `design-reference/README.md` for where the current logo and colors came from.
 
 ### Making a change
 

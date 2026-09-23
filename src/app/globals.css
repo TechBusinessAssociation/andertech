@@ -10,6 +10,15 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+
+  /* Brand palette, sampled from the confirmed logo/asset-kit mockup in
+     design-reference/. Change a value here and every bg-brand-*,
+     text-brand-*, border-brand-* etc. utility updates with it. */
+  --color-brand-blue: #3b7ab3;
+  --color-brand-gold: #f3b947;
+  --color-brand-navy: #0f2b46;
+  --color-brand-sky: #eaf4fb;
+  --color-brand-cream: #fff6df;
 }
 
 @media (prefers-color-scheme: dark) {
