@@ -14,7 +14,7 @@ The club board changes every year and the maintainers are MBA students, not full
 ## Stack
 
 - Next.js (App Router), TypeScript, Tailwind CSS
-- Free hosting tier (Vercel or Cloudflare Pages, TBD), free subdomain for now
+- Hosting: Vercel (free tier), connected to the GitHub repo, free subdomain for now
 - No database and no auth in Phase 1. Do not add either without asking.
 
 ## Commands
@@ -55,6 +55,6 @@ Keep `README.md` current with: how to run the site, how to update board members,
 ## Open decisions (ask the user, don't guess)
 
 - Domain name (free subdomain for now; the QR code must point at a URL that stays valid, or at a redirect we control; whether "ucla" can appear in it is still unconfirmed even though the logo/branding itself is)
-- Hosting provider
-- Board list, roles, and photos
+- Board photos and bios (names/roles are in `content/board.ts`, sourced from AnderTech's Anderson club page as a starting point -- verify it's current; photos/bios still need each person's consent per Rule 7)
+- Event calendar embed URL (`content/links.ts` → `calendarEmbed`)
 - Who is eligible for membership, and who approves it (needed before any members-only features)

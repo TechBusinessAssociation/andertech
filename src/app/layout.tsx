@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Header } from "@/components/header";
+import { site } from "../../content/site";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -14,8 +15,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "AnderTech",
-  description: "A UCLA Anderson MBA club helping students recruit into tech.",
+  title: site.name,
+  description: site.tagline,
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
