@@ -17,7 +17,7 @@ export default function Home() {
       {links.joinSurvey ? (
         <a
           href={links.joinSurvey}
-          className="inline-flex min-h-12 w-fit items-center rounded-lg bg-zinc-900 px-6 py-3 font-medium text-white hover:bg-zinc-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-200 dark:focus-visible:outline-white"
+          className="inline-flex min-h-12 w-fit items-center rounded-lg bg-brand-navy px-6 py-3 font-medium text-white hover:bg-brand-blue focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy"
         >
           Join AnderTech
         </a>

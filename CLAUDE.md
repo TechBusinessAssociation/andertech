@@ -36,7 +36,7 @@ The club board changes every year and the maintainers are MBA students, not full
 2. **Content in data files, not JSX.** Board members, links, and events go in `/content` (JSON or TypeScript), so a future board can edit them without touching components.
 3. **Mobile first.** Most visitors arrive by scanning a QR code on a phone. Check every change at phone width, and keep pages light and fast.
 4. **Accessible by default.** Semantic HTML, alt text, sufficient contrast, keyboard navigation.
-5. **Branding:** do not use UCLA or Anderson logos, marks, or "ucla" in domain names until the club has confirmed Anderson's branding rules. Use the club's own name and logo.
+5. **Branding:** the club's name, logo and use of "Anderson" branding are confirmed with Anderson student affairs. The logo lives at `public/brand/logo.png` (header) and `src/app/favicon.ico` (browser tab); both are referenced from `content/site.ts`, so replacing either file (or editing that entry) updates the logo everywhere it's used. Brand colors are defined once, as Tailwind tokens, in `src/app/globals.css` (`--color-brand-*`). The source mockups the current logo/palette were extracted from live in `design-reference/` for reference; they are not wired into the app. "ucla" is still not to be used in the domain name — that's a separate, still-open decision below.
 6. **Keep dependencies few.** Prefer built-in Next.js features. Ask before adding a package.
 7. **Board photos and bios** are added only with the person's consent.
 
@@ -54,8 +54,7 @@ Keep `README.md` current with: how to run the site, how to update board members,
 
 ## Open decisions (ask the user, don't guess)
 
-- Official club name and logo
-- Domain name (free subdomain for now; the QR code must point at a URL that stays valid, or at a redirect we control)
+- Domain name (free subdomain for now; the QR code must point at a URL that stays valid, or at a redirect we control; whether "ucla" can appear in it is still unconfirmed even though the logo/branding itself is)
 - Hosting provider
 - Board list, roles, and photos
 - Who is eligible for membership, and who approves it (needed before any members-only features)
