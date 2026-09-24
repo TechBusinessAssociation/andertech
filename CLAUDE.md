@@ -9,13 +9,13 @@ The club board changes every year and the maintainers are MBA students, not full
 - **Club fair: 24 September 2026.** Ship a public front door first.
 - **Phase 1 (now, public only):** landing page, board section, event calendar embed, "join" button linking to the welcome survey (Google Form), club contact info.
 - **Phase 2 (after the fair):** public candidate resources and job board links, tech news feed (RSS at build time, optional).
-- **Phase 3 (later):** community features (member login, directory, posts). Needs a database and auth. **Do not build any of this until asked.**
+- **Phase 3 (later):** community features (member directory, posts, profiles). Needs a database for that. **Do not build any of this until asked.** Member *login* itself, plus a minimal members-only resources list, was pulled forward by request -- see the Auth section below. It didn't need a database: JWT sessions, and the member list/resource links live in an Excel workbook outside this repo, not in a database.
 
 ## Stack
 
 - Next.js (App Router), TypeScript, Tailwind CSS
 - Free hosting tier (Vercel or Cloudflare Pages, TBD), free subdomain for now
-- No database and no auth in Phase 1. Do not add either without asking.
+- No database in Phase 1. Auth (see below) was added by explicit request; it doesn't use one. Don't add a database without asking.
 
 ## Commands
 
@@ -28,7 +28,23 @@ The club board changes every year and the maintainers are MBA students, not full
 - **Welcome survey:** Google Form, linked from the site. Open to anyone with the link, so no sign-in is needed at the fair.
 - **Reporting survey and recruiting dashboard:** Google Form plus Looker Studio. The site links to them at most. **Never embed the dashboard or any raw response data on a public page.** Access is controlled by Looker Studio's own sharing list.
 - **Events:** an embedded public Google Calendar. The board edits events in Google Calendar, not in code.
-- **Members-only recruiting resources:** these are **not in this repo and not on this site yet.** They live in a private SharePoint library until the site has real server-side login. Do not add members-only content to the repo, the frontend bundle, or a static export.
+- **Members-only recruiting resources:** the resource files themselves still live in a private SharePoint library, unchanged. `/members` (real server-side login now exists -- see Auth below) shows a curated list of links, which can point at SharePoint or Looker Studio -- it never embeds or hosts that content directly.
+
+## Auth (members-only area)
+
+Login gates only `/members`. The public landing page, board, events, and join button are untouched.
+
+- **Sign-in:** Google (Auth.js / `next-auth` v5). JWT sessions -- no database.
+- **Who can sign in:** an email allow-list on the `Members` tab of a private Excel workbook on the club's Microsoft 365 account (OneDrive for Business / SharePoint -- Graph's Excel API doesn't support personal/consumer OneDrive). Read server-side via Microsoft Graph, app-only (`@azure/msal-node`) -- no Microsoft user signs in for this, it's a service-to-service read. See `src/lib/members-workbook.ts`.
+- **To add or remove a member:** edit the `Members` tab directly (one email per row, inside the `MembersTable` table -- it auto-expands, don't hand-edit a fixed range). No redeploy needed. A new member can sign in within ~60 seconds; a removed member's access lapses within 24 hours at worst -- that lag is intentional (keeps Graph API calls low at ~1000 members), not a bug.
+- **Member-only resource links** (e.g. the recruiting dashboard) live on the `Resources` tab of the same workbook, shown on `/members`. **The recruiting dashboard's real access control is still Looker Studio's own sharing list**, per the rule above -- this site's login is a convenience layer, not the security boundary for that resource. Share the dashboard with approved members' Google accounts (or a Google Group) in Looker Studio itself.
+- **Env vars:** see `.env.local.example`. Set for real in Vercel's dashboard, never in the repo.
+- **Dependencies added for this:** `next-auth`, `@azure/msal-node`.
+- **Gotchas hit while building this, verified locally (Next.js 16.3.5) -- worth checking before assuming they're fixed in a newer version:**
+  - **The route-protection file must be named `middleware.ts`, not `proxy.ts`.** This Next.js version's own bundled docs describe a middleware -> proxy rename, but Turbopack doesn't actually wire up `proxy.ts` here -- it silently builds an empty middleware manifest and the file never runs, in both `next dev` and `next build`/`next start`. `middleware.ts` (the "deprecated" name) is what actually works. Matches [vercel/next.js#93328](https://github.com/vercel/next.js/issues/93328).
+  - **Don't set `runtime: "nodejs"` in `middleware.ts`'s config.** It also silently breaks the manifest the same way. Middleware here runs on the Edge runtime (the working default), which is why it can't import anything that needs Node's `crypto` -- see the next point.
+  - **`middleware.ts` must not import anything that transitively needs Node's `crypto`** (that includes `@azure/msal-node`, used for the membership check) -- merely importing such a module crashes at module-evaluation time on the Edge runtime, even if the function is never called. That's why the Auth.js config is split: `src/auth.config.ts` (Edge-safe, no membership check) is what `middleware.ts` imports for a cheap "is there a session" check; `src/auth.ts` layers the real membership check on top, for the API route handler and pages (Node.js runtime, unaffected). The live "is this email still approved" re-check therefore happens in `src/app/members/page.tsx`, not in middleware.
+  - `trustHost: true` is needed even for local `next start` testing, not just deployment -- without it Auth.js logs `UntrustedHost` and treats every request as session-less.
 
 ## Rules
 
@@ -57,4 +73,5 @@ Keep `README.md` current with: how to run the site, how to update board members,
 - Domain name (free subdomain for now; the QR code must point at a URL that stays valid, or at a redirect we control; whether "ucla" can appear in it is still unconfirmed even though the logo/branding itself is)
 - Hosting provider
 - Board list, roles, and photos
-- Who is eligible for membership, and who approves it (needed before any members-only features)
+- Whether an existing ~1000-person member roster already exists somewhere, to point the Members workbook at, or a new one needs to be created from scratch
+- Who is eligible for membership, and who approves additions to the Members workbook (the mechanism exists now -- edit the Excel file -- but the approval policy is still up to the board)
