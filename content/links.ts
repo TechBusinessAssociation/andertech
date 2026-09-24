@@ -5,9 +5,14 @@
 
 export const links = {
   // Google Form: welcome survey, open to anyone with the link.
-  joinSurvey: null as string | null,
-  // Public Google Calendar embed URL (Phase 1 calendar section).
+  joinSurvey:
+    "https://docs.google.com/forms/d/e/1FAIpQLSf5tvekWCDfFcCoD5989n-Tgd4d4MAXD9mEjbU7sSMA6MmXeA/viewform" as string | null,
+  // Public Google Calendar embed URL (Phase 1 calendar section). Get this
+  // from Google Calendar > Settings > [calendar] > "Integrate calendar" >
+  // "Embed code" -- copy the src="..." value, not the whole <iframe> tag.
   calendarEmbed: null as string | null,
   linkedin: null as string | null,
-  instagram: null as string | null,
+  // Sourced from AnderTech's Anderson club page.
+  instagram: "https://www.instagram.com/andertechba/" as string | null,
+  facebook: "https://www.facebook.com/AnderTechBA/" as string | null,
 };
