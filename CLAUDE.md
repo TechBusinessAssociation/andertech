@@ -14,7 +14,7 @@ The club board changes every year and the maintainers are MBA students, not full
 ## Stack
 
 - Next.js (App Router), TypeScript, Tailwind CSS
-- Free hosting tier (Vercel or Cloudflare Pages, TBD), free subdomain for now
+- Hosting: Vercel (free tier), connected to the GitHub repo, free subdomain for now
 - No database for the public Phase 1 content -- it's still all in `/content`. The one exception is Vercel Postgres, added by explicit request for the members-only area (see the Auth section below): the membership list and resource links. Don't add another database, or use this one for anything else, without asking.
 
 ## Commands
@@ -38,6 +38,7 @@ Login gates only `/members` and `/admin`. The public landing page, board, events
 - **Who can sign in:** an email allow-list in **Vercel Postgres** (`members` table -- see `schema.sql` for the one-time table setup). Read/written via `@vercel/postgres` in `src/lib/members-db.ts`.
   - A database was chosen over the earlier Excel/Microsoft Graph plan because that needed a Microsoft 365 tenant admin to grant admin consent, which wasn't available. Postgres provisions directly in the Vercel dashboard (Storage tab) the project is already connected to -- no separate admin approval.
 - **To add or remove a member, or a resource link: use `/admin`** (gated to the emails in the `ADMIN_EMAILS` env var -- a short, separate list from the membership table itself, meant for a handful of board members, not the whole club). Never edit the database with raw SQL as the normal workflow; `/admin` is the intended interface. `schema.sql` is only for the initial one-time setup.
+- **Admins can always sign in**, even before being added to the `members` table -- otherwise nobody could ever reach `/admin` to bootstrap the list in the first place. See `src/auth.ts`'s `signIn` callback.
 - **Member-only resource links** (e.g. the recruiting dashboard) live in the `resources` table, edited on `/admin`, shown on `/members`. **The recruiting dashboard's real access control is still Looker Studio's own sharing list**, per the rule above -- this site's login is a convenience layer, not the security boundary for that resource. Share the dashboard with approved members' Google accounts (or a Google Group) in Looker Studio itself.
 - **Env vars:** see `.env.local.example`. Set for real in Vercel's dashboard, never in the repo.
 - **Dependencies added for this:** `next-auth`, `@vercel/postgres`.
@@ -50,7 +51,7 @@ Login gates only `/members` and `/admin`. The public landing page, board, events
 ## Rules
 
 1. **Everything in this repo is public.** No secrets, no member names or emails, no survey responses, no private links. Keep `.env*` in `.gitignore` from the first commit, and never put secrets in `NEXT_PUBLIC_` variables.
-2. **Content in data files, not JSX.** Board members, links, and events go in `/content` (JSON or TypeScript), so a future board can edit them without touching components.
+2. **Content in data files, not JSX.** Board members, links, and events go in `/content` (JSON or TypeScript), so a future board can edit them without touching components. The same applies to images: one file in `public/`, one path in `/content`, one component that renders it (see `content/site.ts` → `logo`, `src/components/logo.tsx`, `src/components/header.tsx` for the pattern). Never hardcode an image path directly in a page — swapping the file, or editing its `/content` entry, should be enough to update it everywhere it's used.
 3. **Mobile first.** Most visitors arrive by scanning a QR code on a phone. Check every change at phone width, and keep pages light and fast.
 4. **Accessible by default.** Semantic HTML, alt text, sufficient contrast, keyboard navigation.
 5. **Branding:** the club's name, logo and use of "Anderson" branding are confirmed with Anderson student affairs. The logo lives at `public/brand/logo.png` (header) and `src/app/favicon.ico` (browser tab); both are referenced from `content/site.ts`, so replacing either file (or editing that entry) updates the logo everywhere it's used. Brand colors are defined once, as Tailwind tokens, in `src/app/globals.css` (`--color-brand-*`). The source mockups the current logo/palette were extracted from live in `design-reference/` for reference; they are not wired into the app. "ucla" is still not to be used in the domain name — that's a separate, still-open decision below.
@@ -72,7 +73,7 @@ Keep `README.md` current with: how to run the site, how to update board members,
 ## Open decisions (ask the user, don't guess)
 
 - Domain name (free subdomain for now; the QR code must point at a URL that stays valid, or at a redirect we control; whether "ucla" can appear in it is still unconfirmed even though the logo/branding itself is)
-- Hosting provider
-- Board list, roles, and photos
+- Board photos and bios (names/roles are in `content/board.ts`, sourced from AnderTech's Anderson club page as a starting point -- verify it's current; photos/bios still need each person's consent per Rule 7)
+- Event calendar embed URL (`content/links.ts` → `calendarEmbed`)
 - Whether an existing ~1000-person member roster already exists somewhere to bulk-import via `/admin`, or the list is built from scratch one add at a time
 - Who is eligible for membership, and who approves additions via `/admin` (the mechanism exists now -- add/remove through that page -- but the approval policy, and who's actually in `ADMIN_EMAILS`, is still up to the board)
