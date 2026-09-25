@@ -9,13 +9,13 @@ The club board changes every year and the maintainers are MBA students, not full
 - **Club fair: 24 September 2026.** Ship a public front door first.
 - **Phase 1 (now, public only):** landing page, board section, event calendar embed, "join" button linking to the welcome survey (Google Form), club contact info.
 - **Phase 2 (after the fair):** public candidate resources and job board links, tech news feed (RSS at build time, optional).
-- **Phase 3 (later):** community features (member login, directory, posts). Needs a database and auth. **Do not build any of this until asked.**
+- **Phase 3 (later):** community features (member directory, posts, profiles). **Do not build any of this until asked.** Member *login* itself, plus a minimal members-only resources list and a small `/admin` page, was pulled forward by request -- see the Auth section below. It uses a database (Vercel Postgres), which is why Rule 6/Stack's "ask before adding a database" line was already satisfied for this specific, narrow use.
 
 ## Stack
 
 - Next.js (App Router), TypeScript, Tailwind CSS
 - Hosting: Vercel (free tier), connected to the GitHub repo, free subdomain for now
-- No database and no auth in Phase 1. Do not add either without asking.
+- No database for the public Phase 1 content -- it's still all in `/content`. The one exception is Vercel Postgres, added by explicit request for the members-only area (see the Auth section below): the membership list and resource links. Don't add another database, or use this one for anything else, without asking.
 
 ## Commands
 
@@ -28,7 +28,25 @@ The club board changes every year and the maintainers are MBA students, not full
 - **Welcome survey:** Google Form, linked from the site. Open to anyone with the link, so no sign-in is needed at the fair.
 - **Reporting survey and recruiting dashboard:** Google Form plus Looker Studio. The site links to them at most. **Never embed the dashboard or any raw response data on a public page.** Access is controlled by Looker Studio's own sharing list.
 - **Events:** an embedded public Google Calendar. The board edits events in Google Calendar, not in code.
-- **Members-only recruiting resources:** these are **not in this repo and not on this site yet.** They live in a private SharePoint library until the site has real server-side login. Do not add members-only content to the repo, the frontend bundle, or a static export.
+- **Members-only recruiting resources:** the resource files themselves still live in a private SharePoint library, unchanged. `/members` (real server-side login now exists -- see Auth below) shows a curated list of links, which can point at SharePoint or Looker Studio -- it never embeds or hosts that content directly.
+
+## Auth (members-only area)
+
+Login gates only `/members` and `/admin`. The public landing page, board, events, and join button are untouched.
+
+- **Sign-in:** Google (Auth.js / `next-auth` v5). JWT sessions.
+- **Who can sign in:** an email allow-list in **Vercel Postgres** (`members` table -- see `schema.sql` for the one-time table setup). Read/written via `@vercel/postgres` in `src/lib/members-db.ts`.
+  - A database was chosen over the earlier Excel/Microsoft Graph plan because that needed a Microsoft 365 tenant admin to grant admin consent, which wasn't available. Postgres provisions directly in the Vercel dashboard (Storage tab) the project is already connected to -- no separate admin approval.
+- **To add or remove a member, or a resource link: use `/admin`** (gated to the emails in the `ADMIN_EMAILS` env var -- a short, separate list from the membership table itself, meant for a handful of board members, not the whole club). Never edit the database with raw SQL as the normal workflow; `/admin` is the intended interface. `schema.sql` is only for the initial one-time setup.
+- **Admins can always sign in**, even before being added to the `members` table -- otherwise nobody could ever reach `/admin` to bootstrap the list in the first place. See `src/auth.ts`'s `signIn` callback.
+- **Member-only resource links** (e.g. the recruiting dashboard) live in the `resources` table, edited on `/admin`, shown on `/members`. **The recruiting dashboard's real access control is still Looker Studio's own sharing list**, per the rule above -- this site's login is a convenience layer, not the security boundary for that resource. Share the dashboard with approved members' Google accounts (or a Google Group) in Looker Studio itself.
+- **Env vars:** see `.env.local.example`. Set for real in Vercel's dashboard, never in the repo.
+- **Dependencies added for this:** `next-auth`, `@vercel/postgres`.
+- **Gotchas hit while building this, verified locally (Next.js 16.3.5) -- worth checking before assuming they're fixed in a newer version:**
+  - **The route-protection file must be named `middleware.ts`, not `proxy.ts`.** This Next.js version's own bundled docs describe a middleware -> proxy rename, but Turbopack doesn't actually wire up `proxy.ts` here -- it silently builds an empty middleware manifest and the file never runs, in both `next dev` and `next build`/`next start`. `middleware.ts` (the "deprecated" name) is what actually works. Matches [vercel/next.js#93328](https://github.com/vercel/next.js/issues/93328).
+  - **Don't set `runtime: "nodejs"` in `middleware.ts`'s config.** It also silently breaks the manifest the same way. Middleware here runs on the Edge runtime (the working default), which is why it can't import anything that needs Node's `crypto` -- see the next point.
+  - **`middleware.ts` must not import anything that transitively needs Node-only APIs** (a database client is a likely future example) -- merely importing such a module can crash at module-evaluation time on the Edge runtime, even if the function using it is never called. Verified locally with an earlier Node-only auth dependency this project no longer uses. That's why the Auth.js config is split: `src/auth.config.ts` (Edge-safe, no database access) is what `middleware.ts` builds its own `NextAuth()` instance from, for a cheap "is there a session" check; `src/auth.ts` layers the real membership check on top, for the API route handler and pages (Node.js runtime, unaffected). The live "is this email still approved/admin" re-check therefore happens in `src/app/members/page.tsx` and `src/app/admin/page.tsx`, not in middleware.
+  - `trustHost: true` is needed even for local `next start` testing, not just deployment -- without it Auth.js logs `UntrustedHost` and treats every request as session-less.
 
 ## Rules
 
@@ -57,4 +75,5 @@ Keep `README.md` current with: how to run the site, how to update board members,
 - Domain name (free subdomain for now; the QR code must point at a URL that stays valid, or at a redirect we control; whether "ucla" can appear in it is still unconfirmed even though the logo/branding itself is)
 - Board photos and bios (names/roles are in `content/board.ts`, sourced from AnderTech's Anderson club page as a starting point -- verify it's current; photos/bios still need each person's consent per Rule 7)
 - Event calendar embed URL (`content/links.ts` → `calendarEmbed`)
-- Who is eligible for membership, and who approves it (needed before any members-only features)
+- Whether an existing ~1000-person member roster already exists somewhere to bulk-import via `/admin`, or the list is built from scratch one add at a time
+- Who is eligible for membership, and who approves additions via `/admin` (the mechanism exists now -- add/remove through that page -- but the approval policy, and who's actually in `ADMIN_EMAILS`, is still up to the board)
