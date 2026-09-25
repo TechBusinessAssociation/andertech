@@ -1,6 +1,6 @@
 # AnderTech website
 
-Public website for AnderTech, a UCLA Anderson MBA club that helps students recruit into tech. Built with Next.js, TypeScript and Tailwind CSS. No database. The landing page is fully public; a small `/members` area requires Google sign-in, checked against a membership list kept outside this repo (see "Members area" below).
+Public website for AnderTech, a UCLA Anderson MBA club that helps students recruit into tech. Built with Next.js, TypeScript and Tailwind CSS. The landing page is fully public; a small `/members` area requires Google sign-in, checked against a membership list in a database (see "Members area" below) -- there's no database involved in the public content, which still lives entirely in `content/`.
 
 **Everything in this repo is public.** Never commit passwords, secrets, member names or emails, survey responses, or private links.
 
@@ -39,17 +39,17 @@ A link set to `null` is hidden or disabled on the site. Only add a board member'
 
 ## Members area (login)
 
-`/members` requires signing in with Google, checked against an approved-member list. Nothing about this involves editing code.
+`/members` requires signing in with Google, checked against an approved-member list. `/admin` is the same, plus an extra check (see below). Nothing about day-to-day use of either involves editing code.
 
-**To add or remove a member:** open the club's membership Excel workbook (on OneDrive for Business / SharePoint -- ask the board for the file if you don't have it) and edit the `Members` tab -- one email per row, inside the `MembersTable` table. Type into the row right after the last one so it's included in the table; don't insert rows in the middle in a way that breaks the table's range. Changes take effect without a redeploy: a new member can sign in within about a minute, and a removed member's access lapses within a day at the outside.
+**To add or remove a member, or a resource link (e.g. the recruiting dashboard): go to `/admin`** while signed in with an email listed in the `ADMIN_EMAILS` env var. It's a simple page: paste one or more emails to add members in bulk, search to find and remove one, and a small form for resource links. No SQL, no spreadsheet.
 
-**To add or remove a member-only resource link** (e.g. the recruiting dashboard): same workbook, `Resources` tab, one `Label`/`Url` pair per row in `ResourcesTable`. Important: **this list is a convenience directory, not the dashboard's actual security.** The recruiting dashboard's real access control is Looker Studio's own sharing settings -- share it with each approved member's Google account (or a Google Group) there too, or this login doesn't actually stop anyone with the link from opening it.
+Important about resource links: **that list is a convenience directory, not real security for whatever it links to.** The recruiting dashboard's real access control is Looker Studio's own sharing settings -- share it with each approved member's Google account (or a Google Group) there too, or this login doesn't actually stop anyone with the link from opening it.
 
 **One-time setup**, done once and then forgotten about:
 1. **Google Cloud Console:** OAuth consent screen (External audience, Published -- not "Testing," which caps sign-ins at 100 people) → OAuth 2.0 Client ID (Web application). Redirect URIs: `http://localhost:3000/api/auth/callback/google` and `https://<your-domain>/api/auth/callback/google`.
-2. **Azure Portal (Entra ID):** register an app, create a client secret, and grant it the `Files.Read.All` application permission (or `Sites.Selected`, scoped to just the relevant SharePoint site) with admin consent. This needs someone with admin rights on the club's Microsoft 365 tenant.
-3. Upload `template.xlsx` (in this repo) to OneDrive for Business or a SharePoint site -- not a personal/consumer OneDrive, Microsoft's Excel API doesn't support that.
-4. Set the env vars in `.env.local.example` for real, in Vercel's dashboard (Project → Settings → Environment Variables) -- never in this repo.
+2. **Vercel dashboard → Storage → Create Database → Postgres**, connect it to this project (this auto-injects `POSTGRES_URL`). No separate signup or admin approval needed beyond your existing Vercel access.
+3. Run `schema.sql` (in this repo) once against that database -- easiest from the database's own Query tab in the Vercel dashboard.
+4. Set the env vars in `.env.local.example` for real, in Vercel's dashboard (Project → Settings → Environment Variables) -- never in this repo. Include your own email in `ADMIN_EMAILS` so you can reach `/admin` to add everyone else.
 
 ## Where things live
 
@@ -60,8 +60,8 @@ A link set to `null` is hidden or disabled on the site. Only add a board member'
 | Welcome survey | Google Form (link in `content/links.ts`) |
 | Events | Public Google Calendar, embedded on the site. Edit events in Google Calendar, not in code. |
 | Recruiting dashboard | Looker Studio (access controlled by its own sharing list; never embed it here). Linked from `/members`, but that link isn't what protects it. |
-| Members-only resources | Files still live in a private SharePoint library. `/members` shows a directory of links (from the workbook below), not the files themselves. |
-| Membership list | An Excel workbook on the club's Microsoft 365 account (OneDrive for Business/SharePoint), read via Microsoft Graph. Not in this repo -- see "Members area" above. |
+| Members-only resources | Files still live in a private SharePoint library. `/members` shows a directory of links (edited on `/admin`), not the files themselves. |
+| Membership list | Vercel Postgres, edited via `/admin`. Not in this repo -- see "Members area" above. |
 | Domain | Not set up yet. Using the free `*.vercel.app` address. |
 
 Account logins and passwords belong in the club's shared password manager, not in this repo.

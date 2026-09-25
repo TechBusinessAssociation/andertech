@@ -1,14 +1,12 @@
 import { redirect } from "next/navigation";
 import { auth, signOut } from "@/auth";
-import { getMemberResources, isApprovedMember } from "@/lib/members-workbook";
+import { getMemberResources, isApprovedMember } from "@/lib/members-db";
 
 // middleware.ts only confirms a signed-in Google session (Edge-safe,
-// cheap check) -- it can't import isApprovedMember itself, since that
-// needs Node's `crypto` via @azure/msal-node, which the Edge runtime
-// can't load (see middleware.ts and auth.config.ts's comments). So the
-// actual live membership re-check -- the 24h/60s cache policy, catching
-// someone removed from the workbook -- happens here instead, on every
-// load of this page (Node.js runtime, unaffected).
+// cheap check) -- database access stays out of that bundle on purpose
+// (see auth.config.ts and middleware.ts's comments). So the actual live
+// membership re-check happens here instead, on every load of this page
+// (Node.js runtime, unaffected).
 export default async function MembersPage() {
   const session = await auth();
   const email = session?.user?.email;
@@ -27,7 +25,7 @@ export default async function MembersPage() {
       {resources.length > 0 ? (
         <ul className="flex flex-col gap-3">
           {resources.map((resource) => (
-            <li key={resource.url}>
+            <li key={resource.id}>
               <a
                 className="text-brand-navy underline dark:text-brand-blue"
                 href={resource.url}

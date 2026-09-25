@@ -1,12 +1,12 @@
 import NextAuth from "next-auth";
 import { authConfig } from "./auth.config";
-import { isApprovedMember } from "@/lib/members-workbook";
+import { isApprovedMember } from "@/lib/members-db";
 
 // Full config: the Edge-safe base (auth.config.ts) plus the membership
-// check, which needs Node's `crypto` (via @azure/msal-node) and so can
-// only be imported from Node.js-runtime code -- the API route handler,
-// Server Components/pages, and Server Actions, never middleware.ts.
-// See auth.config.ts and middleware.ts's comments for why.
+// check. Kept out of auth.config.ts (and so out of middleware.ts, which
+// only imports that file) so a database dependency here can never end
+// up in middleware's Edge bundle -- see auth.config.ts and
+// middleware.ts's comments for why that split exists at all.
 export const { handlers, auth, signIn, signOut } = NextAuth({
   ...authConfig,
   callbacks: {

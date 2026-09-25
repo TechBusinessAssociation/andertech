@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Logo } from "./logo";
 import { site } from "../../content/site";
 import { auth, signOut } from "@/auth";
+import { isAdminEmail } from "@/lib/admin";
 
 // Simple site header. Kept on a fixed white plate (not dark-mode aware) --
 // the logo's own colors are the brand, and a fixed light background keeps
@@ -20,19 +21,29 @@ export async function Header() {
         </Link>
 
         {session?.user ? (
-          <form
-            action={async () => {
-              "use server";
-              await signOut({ redirectTo: "/" });
-            }}
-          >
-            <button
-              type="submit"
-              className="text-sm text-zinc-600 underline hover:text-zinc-900"
+          <div className="flex items-center gap-4">
+            {isAdminEmail(session.user.email) && (
+              <Link
+                href="/admin"
+                className="text-sm text-zinc-600 underline hover:text-zinc-900"
+              >
+                Admin
+              </Link>
+            )}
+            <form
+              action={async () => {
+                "use server";
+                await signOut({ redirectTo: "/" });
+              }}
             >
-              Sign out
-            </button>
-          </form>
+              <button
+                type="submit"
+                className="text-sm text-zinc-600 underline hover:text-zinc-900"
+              >
+                Sign out
+              </button>
+            </form>
+          </div>
         ) : (
           <Link
             href="/sign-in"

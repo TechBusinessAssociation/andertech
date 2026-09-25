@@ -2,16 +2,19 @@ import type { NextAuthConfig } from "next-auth";
 import Google from "next-auth/providers/google";
 
 // Edge-safe base config -- deliberately has NO reference to
-// isApprovedMember/@azure/msal-node (see src/lib/members-workbook.ts).
-// That import chain needs Node's `crypto` module, which the Edge runtime
-// can't load: merely importing a module that references it crashes at
-// module-evaluation time, even if the function is never called, so it
-// must not be reachable from anything middleware.ts imports.
+// isApprovedMember or the members database (src/lib/members-db.ts).
+// A DB client can need Node-only APIs (Node's `crypto` module, in a
+// dependency this project hit earlier -- see CLAUDE.md's Auth section),
+// which the Edge runtime can't load: merely importing a module that
+// references it crashes at module-evaluation time, even if the
+// function is never called. So nothing DB-related may be reachable
+// from anything middleware.ts imports.
 //
-// middleware.ts imports auth() from THIS file (via auth.ts re-exporting
-// it) to do the cheap "is there a session at all" check. The real,
-// live membership check runs in src/app/members/page.tsx instead
-// (Node.js runtime, unaffected) -- see that file's comment.
+// middleware.ts builds its own NextAuth(authConfig) directly from this
+// file for the cheap "is there a session at all" check. The real, live
+// membership/admin checks run in each page instead (Node.js runtime,
+// unaffected) -- see src/app/members/page.tsx and
+// src/app/admin/page.tsx.
 export const authConfig: NextAuthConfig = {
   providers: [
     Google({

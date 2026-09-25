@@ -4,18 +4,19 @@ import { authConfig } from "@/auth.config";
 
 // Deliberately builds its own auth() from the Edge-safe base config
 // (auth.config.ts), NOT from "@/auth" -- that file's signIn callback
-// references @azure/msal-node (via isApprovedMember), which needs
-// Node's `crypto`. The Edge runtime can't load that: merely importing a
-// module that references it crashes at module-evaluation time, even if
-// the function is never called. Verified locally via next start:
-// "Failed to load external module node:crypto" when middleware.ts
-// imported from "@/auth" instead of this Edge-safe config directly.
+// references the members database (src/lib/members-db.ts), and no
+// database client should ever end up in middleware's Edge bundle. This
+// was a real, verified problem with an earlier Node-only dependency
+// here (see CLAUDE.md's Auth section): merely importing a module that
+// references Node's `crypto` crashes at module-evaluation time on the
+// Edge runtime, even if the function is never called. Keeping this file
+// scoped to auth.config.ts only avoids that class of bug regardless of
+// what the membership check happens to depend on later.
 //
-// This makes middleware a cheap, Edge-safe first gate: is there a valid
-// Google-authenticated session at all? The live "is this email still an
-// approved member right now" re-check (the 24h/60s cache policy) runs in
-// src/app/members/page.tsx instead, which always runs on the Node.js
-// runtime and can safely import members-workbook.ts.
+// This makes middleware a cheap, Edge-safe first gate for both
+// /members and /admin: is there a valid Google-authenticated session at
+// all? The real checks (still an approved member; also an admin) run in
+// each page itself instead, which always runs on the Node.js runtime.
 const { auth } = NextAuth(authConfig);
 
 function denied(request: NextRequest) {
@@ -45,5 +46,5 @@ export default async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/members/:path*"],
+  matcher: ["/members/:path*", "/admin/:path*"],
 };
