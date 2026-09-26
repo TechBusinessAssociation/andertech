@@ -1,4 +1,5 @@
 import { sql } from "@vercel/postgres";
+import type { Role } from "@/lib/roles";
 
 // Reads/writes the membership allow-list, member-only resource links (and
 // their categories) and members-only events in Vercel Postgres. Nothing here is in the repo -- see schema.sql for
@@ -109,23 +110,89 @@ export async function getUpcomingEvents(): Promise<MemberEvent[]> {
   }
 }
 
-// --- Admin-only from here down. Callers (src/app/admin/page.tsx) are
-// responsible for checking isAdminEmail first -- these do no
-// authorization themselves.
+// --- Roles. Admin access is decided in src/lib/admin.ts (ADMIN_EMAILS env var
+// OR the 'admin' role below); these are just the queries.
 
-export async function addMembers(emails: string[]): Promise<number> {
+export async function hasRole(
+  email: string | null | undefined,
+  role: Role,
+): Promise<boolean> {
+  if (!email) return false;
+  const normalized = email.trim().toLowerCase();
+  if (!normalized) return false;
+  try {
+    const { rows } = await sql`
+      select 1 from member_roles
+      where email = ${normalized} and role = ${role} limit 1
+    `;
+    return rows.length > 0;
+  } catch {
+    return false;
+  }
+}
+
+// --- Admin-only from here down. Every caller must have passed
+// requireAdmin() (src/lib/require-admin.ts) -- these do no authorization
+// themselves.
+
+// Roles are passed to SQL as one comma-separated string (and split back with
+// string_to_array) so the whole change is a single statement -- atomic, and no
+// array-parameter serialization to depend on.
+function csv(values: readonly string[]): string {
+  return values.join(",");
+}
+
+// Adds members and gives each of them the given roles (existing members keep
+// their current roles and gain these). One statement, however many emails.
+export async function addMembers(
+  emails: string[],
+  roles: readonly Role[],
+): Promise<number> {
   const normalized = [
     ...new Set(
-      emails.map((e) => e.trim().toLowerCase()).filter((e) => e.includes("@")),
+      emails
+        .map((e) => e.trim().toLowerCase())
+        .filter((e) => e.includes("@") && !e.includes(",")),
     ),
   ];
-  for (const email of normalized) {
-    await sql`
-      insert into members (email) values (${email})
+  if (normalized.length === 0) return 0;
+  await sql`
+    with input as (
+      select unnest(string_to_array(${csv(normalized)}::text, ',')) as email
+    ),
+    added as (
+      insert into members (email) select email from input
       on conflict (email) do nothing
-    `;
-  }
+    )
+    insert into member_roles (email, role)
+    select i.email, r
+    from input i, unnest(string_to_array(${csv(roles)}::text, ',')) as r
+    on conflict do nothing
+  `;
   return normalized.length;
+}
+
+// Replaces a member's roles with exactly this set (never empty -- callers
+// pass roles through cleanRoles).
+export async function setMemberRoles(
+  email: string,
+  roles: readonly Role[],
+): Promise<void> {
+  const normalized = email.trim().toLowerCase();
+  await sql`
+    with wanted as (
+      select unnest(string_to_array(${csv(roles)}::text, ',')) as role
+    ),
+    removed as (
+      delete from member_roles
+      where email = ${normalized}
+        and role not in (select role from wanted)
+    )
+    insert into member_roles (email, role)
+    select ${normalized}::text, role from wanted
+    where exists (select 1 from members where email = ${normalized})
+    on conflict do nothing
+  `;
 }
 
 export async function removeMember(email: string): Promise<void> {
@@ -133,18 +200,39 @@ export async function removeMember(email: string): Promise<void> {
   await sql`delete from members where email = ${normalized}`;
 }
 
-export async function searchMembers(
+export type MemberRow = { email: string; roles: string[] };
+
+export const MEMBERS_PAGE_SIZE = 10;
+
+// One page of members (with their roles), optionally filtered by a plain
+// substring of the email. strpos, not LIKE, so % and _ in a search are literal.
+export async function listMembers(
   query: string,
-  limit = 50,
-): Promise<string[]> {
-  const pattern = `%${query.trim().toLowerCase()}%`;
-  const { rows } = await sql`
-    select email from members
-    where email like ${pattern}
-    order by email asc
-    limit ${limit}
+  page: number,
+): Promise<{ rows: MemberRow[]; total: number; page: number; pages: number }> {
+  const needle = query.trim().toLowerCase();
+  const { rows: countRows } = await sql`
+    select count(*)::int as count from members
+    where ${needle} = '' or strpos(email, ${needle}) > 0
   `;
-  return rows.map((row) => row.email as string);
+  const total = (countRows[0]?.count as number) ?? 0;
+  const pages = Math.max(1, Math.ceil(total / MEMBERS_PAGE_SIZE));
+  const current = Math.min(Math.max(1, Math.trunc(page) || 1), pages);
+
+  const { rows } = await sql`
+    select m.email,
+           coalesce(
+             array_agg(r.role order by r.role) filter (where r.role is not null),
+             '{}'
+           ) as roles
+    from members m
+    left join member_roles r on r.email = m.email
+    where ${needle} = '' or strpos(m.email, ${needle}) > 0
+    group by m.email
+    order by m.email asc
+    limit ${MEMBERS_PAGE_SIZE} offset ${(current - 1) * MEMBERS_PAGE_SIZE}
+  `;
+  return { rows: rows as MemberRow[], total, page: current, pages };
 }
 
 export async function countMembers(): Promise<number> {
@@ -187,6 +275,20 @@ export async function getCategories(): Promise<Category[]> {
     order by sort_order asc, name asc
   `;
   return rows as Category[];
+}
+
+export type CategoryWithCount = Category & { resource_count: number };
+
+export async function getCategoriesWithCounts(): Promise<CategoryWithCount[]> {
+  const { rows } = await sql`
+    select c.id, c.name, c.description, c.sort_order,
+           count(r.id)::int as resource_count
+    from categories c
+    left join resources r on r.category_id = c.id
+    group by c.id
+    order by c.sort_order asc, c.name asc
+  `;
+  return rows as CategoryWithCount[];
 }
 
 export async function addCategory(
@@ -261,6 +363,29 @@ export async function addResource(input: {
   return true;
 }
 
+export async function updateResource(
+  id: number,
+  input: {
+    label: string;
+    url: string;
+    description: string;
+    categoryId: number;
+    sortOrder: number;
+  },
+): Promise<boolean> {
+  const label = input.label.trim();
+  const url = cleanUrl(input.url);
+  if (!label || !url) return false;
+  await sql`
+    update resources
+    set label = ${label}, url = ${url},
+        description = ${emptyToNull(input.description)},
+        category_id = ${input.categoryId}, sort_order = ${input.sortOrder}
+    where id = ${id}
+  `;
+  return true;
+}
+
 export async function removeResource(id: number): Promise<void> {
   await sql`delete from resources where id = ${id}`;
 }
@@ -278,7 +403,7 @@ export async function getEventCategories(): Promise<string[]> {
   return [...new Set([...DEFAULT_EVENT_CATEGORIES, ...used])].sort();
 }
 
-// All events (past included), so admins can fix or delete old ones.
+// All events, past included (the admin page splits upcoming from past).
 export async function getAdminEvents(): Promise<MemberEvent[]> {
   const { rows } = await sql`
     select
@@ -289,7 +414,7 @@ export async function getAdminEvents(): Promise<MemberEvent[]> {
       location, description, url
     from events
     order by event_date asc, start_time asc nulls first, title asc
-    limit 300
+    limit 500
   `;
   return rows as MemberEvent[];
 }

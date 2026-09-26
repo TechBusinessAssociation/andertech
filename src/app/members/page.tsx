@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth, signOut } from "@/auth";
-import { isAdminEmail } from "@/lib/admin";
+import { isAdmin } from "@/lib/admin";
 import { getResourceGroups, isApprovedMember } from "@/lib/members-db";
 
 // middleware.ts only confirms a signed-in Google session (Edge-safe,
@@ -17,7 +17,10 @@ export default async function MembersPage() {
     redirect("/sign-in");
   }
 
-  const groups = await getResourceGroups();
+  const [groups, admin] = await Promise.all([
+    getResourceGroups(),
+    isAdmin(email),
+  ]);
 
   return (
     <main className="mx-auto flex max-w-2xl flex-1 flex-col gap-8 px-6 py-16">
@@ -35,7 +38,7 @@ export default async function MembersPage() {
         >
           Upcoming events
         </Link>
-        {isAdminEmail(email) && (
+        {admin && (
           <Link
             href="/admin"
             className="text-sm text-zinc-600 underline hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"

@@ -53,3 +53,20 @@ create table if not exists events (
 );
 
 create index if not exists events_event_date_idx on events (event_date);
+
+-- --- Member roles (a member can have several) ---
+-- Roles are a fixed list in src/lib/roles.ts ('club-member', 'admin').
+-- Admin access = an email in the ADMIN_EMAILS env var (permanent backstop)
+-- OR a member with the 'admin' role here. Safe to re-run: the backfill only
+-- touches members that have no role yet.
+
+create table if not exists member_roles (
+  email text not null references members(email) on delete cascade,
+  role text not null,
+  primary key (email, role)
+);
+
+insert into member_roles (email, role)
+select email, 'club-member' from members m
+where not exists (select 1 from member_roles r where r.email = m.email)
+on conflict do nothing;
