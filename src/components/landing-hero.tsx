@@ -22,7 +22,7 @@ export function LandingHero() {
       <div className="mx-auto grid max-w-5xl items-center gap-8 px-5 py-10 md:grid-cols-[1.35fr_1fr] md:gap-12 md:py-14">
         <div>
           {site.officialName && (
-            <span className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-brand-navy/70 before:h-0.5 before:w-[22px] before:shrink-0 before:bg-brand-gold before:content-[''] dark:text-white/70">
+            <span className="inline-flex items-center text-xs font-semibold uppercase tracking-[0.12em] text-brand-navy/70 dark:text-white/70">
               {site.officialName}
             </span>
           )}

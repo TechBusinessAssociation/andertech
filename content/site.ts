@@ -16,6 +16,9 @@ export const site = {
   // Subject prefix on feedback emails from the members page ("Broken link or
   // missing something?"), so the board can filter them in the shared inbox.
   feedbackSubject: "AnderTech Website Feedback",
+  // People request an account on /request-access with an address at this
+  // domain (UCLA Google accounts). Anything else is rejected.
+  requestEmailDomain: "g.ucla.edu",
   // The three things the club does, shown on the home page. `icon` must be
   // one of: cap, people, chart, brief, folder (see src/components/icons.tsx).
   pillars: [

@@ -45,9 +45,12 @@ A link set to `null` is hidden or disabled on the site. Only add a board member'
 
 `/members` requires signing in with Google, checked against an approved-member list. `/admin` is the same, plus an extra check (see below). Nothing about day-to-day use of either involves editing code.
 
+The **Login** button at the top right of every page goes to the sign-in page. Once someone is signed in it changes to **Members** (this takes about a second after the page loads), and admins also get an **Admin console** button.
+
 **To add or remove a member, resource link, resource category or members-only event: go to `/admin`** (there's an "Admin" link on `/members` for admins). A menu down the left has **Members**, **Resources → Categories / Resources**, and **Events**. No SQL, no spreadsheet.
 
 - **Who can use `/admin`:** emails in the `ADMIN_EMAILS` env var (a permanent backstop -- keep at least one there so the club can never lock itself out), plus any member you give the **Admin** role.
+- **Requests:** anyone can ask for an account on the **Request access** page (linked from the sign-in page) with their name and `@g.ucla.edu` address. Pending requests appear under **Requests** in the admin menu, with a number badge when there are any. **Approve** adds them as a Club member; **Reject** leaves them out (they can ask again later). Nobody is emailed automatically, so tell them once you've approved, and they sign in with that same Google account. Names and emails in requests are stored only in the database, never in the repo.
 - **Members:** add many at once (paste emails, tick their roles -- Club member is ticked by default). The list below shows 10 at a time with Previous/Next and a search box (searches every member, not just the visible page). **Edit roles** on a row lets you give someone several roles, e.g. Club member + Admin. You can't remove yourself or take the Admin role from yourself.
 
 - **Categories** are the groups on `/members` (e.g. Prepare, Find roles). The number next to each sets the order, lowest first; leave gaps (10, 20, 30) so you can slot a new one in. A category can't be removed while resources still use it.
@@ -60,6 +63,8 @@ Important about resource links: **that list is a convenience directory, not real
 
 **One-time setup**, done once and then forgotten about:
 1. **Google Cloud Console:** OAuth consent screen (External audience, Published -- not "Testing," which caps sign-ins at 100 people) → OAuth 2.0 Client ID (Web application). Redirect URIs: `http://localhost:3000/api/auth/callback/google` and `https://<your-domain>/api/auth/callback/google`.
+   - **"Access blocked: Error 400: redirect_uri_mismatch"** on Google's page means the address you signed in from isn't in that list. The redirect address is *the address in the browser bar* + `/api/auth/callback/google`, and it must match exactly (`www.` vs no `www.`, `http` vs `https`, and each Vercel preview URL are all different addresses). On Google's error page click **error details** to see the exact `redirect_uri` it received, and add that to the OAuth client's Authorized redirect URIs (changes can take a few minutes). Vercel preview deployments get a new address per branch, so test sign-in on the production domain, or register that one preview URL.
+   - The sign-in button always opens Google's account chooser, so someone signed in to Google with a personal account can pick the account they are a member under.
 2. **Vercel dashboard → Storage → Create Database → Postgres**, connect it to this project (this auto-injects `POSTGRES_URL`). No separate signup or admin approval needed beyond your existing Vercel access.
 3. Run `schema.sql` (in this repo) once against that database -- easiest from the database's own Query tab in the Vercel dashboard. It is safe to re-run, so if `schema.sql` gains new tables later (as it did for categories and events), just run it again.
 4. Set the env vars in `.env.local.example` for real, in Vercel's dashboard (Project → Settings → Environment Variables) -- never in this repo. Include your own email in `ADMIN_EMAILS` so you can reach `/admin` to add everyone else.
