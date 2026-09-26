@@ -4,15 +4,17 @@
 // responsible for the inner container width.
 export function HeroBand({
   labelledBy,
+  className = "",
   children,
 }: {
   labelledBy: string;
+  className?: string;
   children: React.ReactNode;
 }) {
   return (
     <section
       aria-labelledby={labelledBy}
-      className="relative isolate overflow-hidden bg-linear-to-br from-brand-sky via-white to-brand-cream text-brand-navy dark:from-[#12324f] dark:via-[#0d2136] dark:to-[#2a230f] dark:text-white"
+      className={`relative isolate overflow-hidden bg-linear-to-br from-brand-sky via-white to-brand-cream text-brand-navy dark:from-[#12324f] dark:via-[#0d2136] dark:to-[#2a230f] dark:text-white ${className}`}
     >
       <svg
         viewBox="0 0 460 300"
