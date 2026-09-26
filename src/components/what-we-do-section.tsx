@@ -107,7 +107,7 @@ export function WhatWeDoSection() {
                 >
                   <Media chapter={chapter} number={number} />
                 </div>
-                <p className="reveal mt-6 max-w-[52ch] text-lg leading-snug text-zinc-800 md:text-xl dark:text-zinc-200 [--r0:6%] [--r1:26%]">
+                <p className="reveal mt-6 max-w-[52ch] text-lg leading-snug text-pretty text-zinc-800 md:text-xl dark:text-zinc-200 [--r0:6%] [--r1:26%]">
                   {chapter.body}
                 </p>
               </div>

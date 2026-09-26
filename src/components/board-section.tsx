@@ -34,7 +34,7 @@ export function BoardSection() {
         </p>
       ) : (
         <>
-          <p className="reveal mt-3 max-w-[52ch] text-lg leading-snug text-zinc-600 dark:text-zinc-400 [--r0:6%] [--r1:26%]">
+          <p className="reveal mt-3 max-w-[60ch] text-lg leading-snug text-balance text-zinc-600 dark:text-zinc-400 [--r0:6%] [--r1:26%]">
             {board.length} students this year, across recruiting, learning,
             community, alumni and operations.
           </p>
