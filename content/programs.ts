@@ -5,15 +5,12 @@
 // The three chapters use the same names as the three pillars in
 // content/site.ts, so the hero and this section stay consistent.
 //
-// Sources: the club's Anderson page (Kick-Off Night/101 Series, Tech Bytes,
-// Technology Career Night, Tech Treks, Days-on-the-Job, alumni mentorship,
-// cross-club collaborations, interview prep and case workshops, APIC) and the
-// 2023-24 event planner (function deep-dives, Crypto & Web3 101, career
-// mixers, the APIC final pitch), checked against Anderson's public pages: the
-// Emerging Tech Conference (with the Entrepreneur Association; 2026 edition
-// listed for May 29, 2026) and Unchained: Blockchain Business Forum (ran 2023-
-// 2025; no 2026 edition found). Programs change with each board: keep this list
-// honest by deleting anything that no longer runs.
+// Source: the club's 2026 Operating Calendar (2026-27 program), checked
+// against Anderson's public pages for the conferences. The calendar is
+// internal, so this copy is deliberately generic: no dates, company names,
+// budgets, venues or people, and nothing cancelled or on hold. Programs
+// change with each board: delete anything that stops running, and add
+// new ones here.
 //
 // PHOTOS: a chapter's `photo` is null until you add one. To add it, put the
 // image in public/photos/ (about 1600px wide, JPEG or WebP, under ~400 KB)
@@ -49,24 +46,28 @@ export const chapters: Chapter[] = [
     body: "Tech is a big industry with a lot of doors. Our sessions give you the vocabulary, the frameworks and the hands-on practice to walk through them, whatever you did before Anderson.",
     programs: [
       {
-        title: "Kick-Off Night & the 101 Series",
-        blurb: "Your introduction to how the tech industry works and how to break in.",
+        title: "Accelerated Curriculum",
+        blurb: "Five tech deep-dives on how the internet, storage, cloud compute, data systems and software delivery really work, each paired with a strategy case.",
       },
       {
-        title: "Tech Bytes",
-        blurb: "Short, focused sessions on one topic or skill at a time.",
+        title: "Hands-on skills workshops",
+        blurb: "Write a product spec, prototype an MVP with AI tools, learn SQL, ship a website and practice system design.",
       },
       {
-        title: "Function deep-dives",
-        blurb: "Sales, business development, operations and the other roles beyond product and engineering.",
+        title: "Function 101 sessions",
+        blurb: "Walk through how a function really works, from idea to design to engineering to QA.",
       },
       {
-        title: "Emerging-tech workshops",
-        blurb: "Crypto & Web3 101 and other topics at the frontier of the industry.",
+        title: "Speaker panels",
+        blurb: "Practitioners on tech and entertainment, sports, policy, global markets and more.",
       },
       {
-        title: "Flagship conferences",
-        blurb: "Co-hosted with the Entrepreneur Association: the annual Emerging Tech Conference, and past editions of Unchained: Blockchain Business Forum.",
+        title: "Founder AMAs & product demos",
+        blurb: "Fireside chats with experienced executives, and tech companies pitching their latest products on campus.",
+      },
+      {
+        title: "Flagship conference",
+        blurb: "The annual Emerging Tech Conference, co-hosted with the Entrepreneur Association: panels, workshops, demos and more.",
       },
     ],
     photo: null,
@@ -78,24 +79,28 @@ export const chapters: Chapter[] = [
     body: "Recruiting runs on relationships. We put you in the room with recruiters, founders, alumni and each other, early enough for it to matter.",
     programs: [
       {
-        title: "Technology Career Night",
-        blurb: "Meet recruiters from 20+ tech companies in a single evening.",
+        title: "Career Nights",
+        blurb: "Networking with alumni working in tech, plus Startup Career Nights with founders.",
       },
       {
-        title: "Career mixers",
-        blurb: "Relaxed networking evenings with recruiters and fellow students.",
+        title: "Days-on-the-Job & company visits",
+        blurb: "Go to companies, or have them come to campus, to see the work and meet the teams.",
       },
       {
-        title: "Tech Treks",
-        blurb: "Visit companies and meet the teams behind the products.",
+        title: "Treks & site visits",
+        blurb: "Curated group trips to LA Tech Week and other local tech conferences, plus regular visits to see emerging tech deployed at scale.",
       },
       {
-        title: "Alumni mentorship",
-        blurb: "Learn from Anderson alumni who are already working in tech.",
+        title: "Mixers",
+        blurb: "First-year and second-year socials, cross-school mixers with Marshall and Haas, and a quarterly mixer pairing MBAs with engineering, law, medical and film students.",
+      },
+      {
+        title: "Mentorship program",
+        blurb: "Join the program at the start of the year, with check-ins along the way.",
       },
       {
         title: "Cross-club events",
-        blurb: "Joint programming with other Anderson groups, including women in tech and data science, plus founder talks like Founding a Tech Startup.",
+        blurb: "Joint events with other Anderson groups, including the Entrepreneur Association, women in tech and the identity clubs.",
       },
     ],
     photo: null,
@@ -104,19 +109,23 @@ export const chapters: Chapter[] = [
     id: "career-development",
     label: "Career development",
     heading: "Practice until the real thing feels routine.",
-    body: "Interviews are a skill. We run the workshops, case practice and hands-on projects that turn interest into offers, and members get a library of recruiting resources on top.",
+    body: "Interviews are a skill. We run the workshops, mock interviews and case practice that turn interest into offers, and members get a library of recruiting resources on top.",
     programs: [
       {
-        title: "Interview prep & case workshops",
-        blurb: "Structured practice for behavioral and case interviews.",
+        title: "Resume, cover letter & networking workshops",
+        blurb: "Write a tech-ready resume and cover letter, and learn the professionalism recruiters expect.",
       },
       {
-        title: "Days-on-the-Job",
-        blurb: "See what a role is really like before you commit to it.",
+        title: "Interview prep",
+        blurb: "Coaching from second-years, speed behavioral mocks, alumni mock interviews and strategy casing practice.",
       },
       {
-        title: "Anderson Product Innovation Challenge",
-        blurb: "A product design competition that ends in final pitches: real work to talk about in interviews.",
+        title: "Recruiting strategy sessions",
+        blurb: "Panels on full-time re-recruiting, a workshop for international students, and company panels with the employers that hire most.",
+      },
+      {
+        title: "Ship It build sessions",
+        blurb: "Monthly virtual sessions where members write and publish a LinkedIn post about what they built that month.",
       },
       {
         title: "Members-only resource library",
