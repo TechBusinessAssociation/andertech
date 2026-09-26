@@ -66,8 +66,8 @@ export const chapters: Chapter[] = [
         blurb: "Fireside chats with experienced executives, and tech companies pitching their latest products on campus.",
       },
       {
-        title: "Flagship conference",
-        blurb: "The annual Emerging Tech Conference, co-hosted with the Entrepreneur Association: panels, workshops, demos and more.",
+        title: "Flagship conferences",
+        blurb: "The Tech + Society Conference with the Easton Technology Management Center each fall, and the annual Emerging Tech Conference with the Entrepreneur Association each spring.",
       },
     ],
     photo: null,
