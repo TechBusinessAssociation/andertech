@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth, signOut } from "@/auth";
+import { isAdminEmail } from "@/lib/admin";
 import { getResourceGroups, isApprovedMember } from "@/lib/members-db";
 
 // middleware.ts only confirms a signed-in Google session (Edge-safe,
@@ -27,12 +28,22 @@ export default async function MembersPage() {
         </p>
       </div>
 
-      <Link
-        href="/members/events"
-        className="inline-flex w-fit items-center rounded-lg bg-brand-navy px-4 py-2 text-sm font-medium text-white hover:bg-brand-blue"
-      >
-        Upcoming events
-      </Link>
+      <div className="flex flex-wrap items-center gap-4">
+        <Link
+          href="/members/events"
+          className="inline-flex w-fit items-center rounded-lg bg-brand-navy px-4 py-2 text-sm font-medium text-white hover:bg-brand-blue"
+        >
+          Upcoming events
+        </Link>
+        {isAdminEmail(email) && (
+          <Link
+            href="/admin"
+            className="text-sm text-zinc-600 underline hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
+          >
+            Admin
+          </Link>
+        )}
+      </div>
 
       {groups.length > 0 ? (
         groups.map((group) => (
