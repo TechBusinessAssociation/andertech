@@ -70,3 +70,9 @@ insert into member_roles (email, role)
 select email, 'club-member' from members m
 where not exists (select 1 from member_roles r where r.email = m.email)
 on conflict do nothing;
+
+-- --- "Start here" pins ---
+-- Resources with featured = true appear as the big cards at the top of the
+-- members home page. Set on /admin/resources. Safe to re-run.
+
+alter table resources add column if not exists featured boolean not null default false;

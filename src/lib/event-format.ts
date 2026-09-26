@@ -38,3 +38,37 @@ export function timeRange(
     ? `${formatTime(event.start_time)} - ${formatTime(event.end_time)}`
     : formatTime(event.start_time);
 }
+
+// "Today" in LA as YYYY-MM-DD (all events are in LA; the server runs in UTC).
+export function todayInLA(): string {
+  return new Date().toLocaleDateString("en-CA", {
+    timeZone: "America/Los_Angeles",
+  });
+}
+
+// Whole days from `from` (default: today in LA) to `ymd`; 0 means today.
+export function daysUntil(ymd: string, from: string = todayInLA()): number {
+  const msPerDay = 24 * 60 * 60 * 1000;
+  return Math.round(
+    (parseDate(ymd).getTime() - parseDate(from).getTime()) / msPerDay,
+  );
+}
+
+// Pieces for a calendar-style date chip: SEP / 29 / Tue.
+export function dateParts(ymd: string): {
+  month: string;
+  day: number;
+  weekday: string;
+} {
+  const date = parseDate(ymd);
+  return {
+    month: date
+      .toLocaleDateString("en-US", { month: "short", timeZone: "UTC" })
+      .toUpperCase(),
+    day: date.getUTCDate(),
+    weekday: date.toLocaleDateString("en-US", {
+      weekday: "short",
+      timeZone: "UTC",
+    }),
+  };
+}

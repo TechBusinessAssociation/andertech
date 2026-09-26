@@ -25,6 +25,7 @@ export async function saveResourceAction(formData: FormData) {
     description: String(formData.get("description") ?? ""),
     categoryId: toInt(formData.get("category_id"), NaN),
     sortOrder: toInt(formData.get("sort_order")),
+    featured: formData.get("featured") === "on",
   };
   const rawId = formData.get("id");
 

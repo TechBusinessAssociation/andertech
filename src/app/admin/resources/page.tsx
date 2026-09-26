@@ -3,6 +3,7 @@ import { getAdminResources, getCategories } from "@/lib/members-db";
 import { requireAdmin } from "@/lib/require-admin";
 import { removeResourceAction, saveResourceAction } from "./actions";
 import {
+  Badge,
   Notice,
   PageHeader,
   cardClass,
@@ -149,6 +150,15 @@ export default async function AdminResourcesPage({ searchParams }: Props) {
                 />
               </label>
             </div>
+            <label className="flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                name="featured"
+                defaultChecked={editing?.featured ?? false}
+              />
+              Pin to &quot;Start here&quot; on the members home page (best with
+              three or fewer)
+            </label>
             <div className="flex items-center gap-3">
               <button type="submit" className={primaryButtonClass}>
                 {editing ? "Save changes" : "Add resource"}
@@ -206,6 +216,11 @@ export default async function AdminResourcesPage({ searchParams }: Props) {
                     >
                       {resource.label}
                     </a>
+                    {resource.featured && (
+                      <span className="ml-2 align-middle">
+                        <Badge tone="brand">Pinned</Badge>
+                      </span>
+                    )}
                   </td>
                   <td className={tdClass}>{resource.category_name ?? "Other"}</td>
                   <td className={`${tdClass} text-zinc-600 dark:text-zinc-400`}>

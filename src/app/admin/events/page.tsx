@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { formatDay, timeRange } from "@/lib/event-format";
+import { formatDay, timeRange, todayInLA } from "@/lib/event-format";
 import { getAdminEvents, getEventCategories } from "@/lib/members-db";
 import { requireAdmin } from "@/lib/require-admin";
 import { removeEventAction, saveEventAction } from "./actions";
@@ -44,9 +44,7 @@ export default async function AdminEventsPage({ searchParams }: Props) {
 
   // "Today" in LA (YYYY-MM-DD), matching how the members page decides what's
   // upcoming. Dates are plain strings, so a string compare is correct.
-  const today = new Date().toLocaleDateString("en-CA", {
-    timeZone: "America/Los_Angeles",
-  });
+  const today = todayInLA();
   const upcomingCount = all.filter((e) => e.event_date >= today).length;
   const events = showAll ? all : all.filter((e) => e.event_date >= today);
   const editing = edit
