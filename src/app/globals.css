@@ -68,6 +68,71 @@ body {
     linear-gradient(to bottom, rgb(255 255 255 / 0.05) 1px, transparent 1px);
 }
 
+/* Scroll-driven motion for the "What we do" chapters
+   (src/components/what-we-do-section.tsx). Pure CSS -- no JavaScript, no
+   library -- so the home page stays a static page.
+   - .reveal: a block starts 40px lower (and, for photos on wide screens,
+     32px to the side) and faded, and settles into place as it scrolls into
+     view. Progress is tied to the scroll position, so scrolling back
+     reverses it. --r0/--r1 shift where in the scroll the block animates, which
+     staggers label, heading, text and photo.
+   - .media-frame + .drift: the picture inside a photo frame moves a little
+     slower than the page (a gentle parallax). The image is scaled up slightly
+     so its edges never show inside the frame.
+   Only browsers that support scroll-driven animations get any of this (Chrome,
+   Edge, Safari 26+); everywhere else, and for anyone who asks for reduced
+   motion, everything simply sits in place, fully visible. The `animation`
+   shorthand resets `animation-timeline`, so the timeline is always set after
+   it. */
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: view()) {
+    @keyframes reveal-rise {
+      from {
+        opacity: 0;
+        transform: translate(var(--dx, 0px), var(--dy, 40px));
+      }
+      to {
+        opacity: 1;
+        transform: none;
+      }
+    }
+    @keyframes drift {
+      from {
+        transform: translateY(-6%) scale(1.14);
+      }
+      to {
+        transform: translateY(6%) scale(1.14);
+      }
+    }
+    @keyframes drift-numeral {
+      from {
+        transform: translateY(-28%);
+      }
+      to {
+        transform: translateY(28%);
+      }
+    }
+    .reveal {
+      animation: reveal-rise linear both;
+      animation-timeline: view();
+      animation-range: cover var(--r0, 0%) cover var(--r1, 22%);
+    }
+    .media-frame {
+      view-timeline: --media block;
+    }
+    .drift {
+      animation: drift linear both;
+      animation-timeline: --media;
+      animation-range: cover 0% cover 100%;
+    }
+    .drift-numeral {
+      animation: drift-numeral linear both;
+      animation-timeline: --media;
+      animation-range: cover 0% cover 100%;
+    }
+  }
+}
+
 /* Flip button (src/components/flip-button.tsx): the front face (an icon)
    turns away on hover or keyboard focus to show the back face (a label). Only
    the inner layer rotates, so the focus ring on the link itself stays put.
