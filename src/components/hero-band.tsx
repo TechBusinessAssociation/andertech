@@ -3,24 +3,20 @@
 // and network drawing echoing the club's hero artwork. Callers pass the
 // content and are responsible for the inner container width.
 //
-// Two sizes of the same drawing:
-//  - "compact" (default): a small, complete illustration tucked into the right
-//    side of the band, scaled with `meet` so it is never cropped.
-//  - "large": a big version that runs off the right edge so only about 40% of
-//    it shows, used behind the sign-in and request-access cards.
+// Two placements of the same big drawing:
+//  - "corner" (default): the globe is centered on the band's bottom-right
+//    corner, so only its top-left quarter shows, curving in from the right
+//    side. Used on the landing page and the members home.
+//  - "large": the globe runs off the right edge so about 40% of it shows,
+//    used behind the sign-in and request-access cards.
 
 // The drawing itself: everything sits on or inside a globe centered at
-// (300,150) with radius 125. `hairline` keeps every line 1px thick however
-// large the drawing is scaled, and `nodeScale` shrinks the dots to match.
-function Globe({
-  hairline,
-  nodeScale,
-}: {
-  hairline: boolean;
-  nodeScale: number;
-}) {
-  const line = hairline ? { vectorEffect: "non-scaling-stroke" as const } : {};
-  const r = (n: number) => n * nodeScale;
+// (300,150) with radius 125. Lines are 1px however large the drawing is scaled
+// (non-scaling strokes), and the dots are sized to suit the big versions.
+const line = { vectorEffect: "non-scaling-stroke" as const };
+const r = (n: number) => n * 0.6;
+
+function Globe() {
   return (
     <>
       {/* Globe: outer and inner ring, meridians, equator and a latitude. */}
@@ -68,12 +64,12 @@ function Globe({
 export function HeroBand({
   labelledBy,
   className = "",
-  art = "compact",
+  art = "corner",
   children,
 }: {
   labelledBy: string;
   className?: string;
-  art?: "compact" | "large";
+  art?: "corner" | "large";
   children: React.ReactNode;
 }) {
   return (
@@ -91,16 +87,20 @@ export function HeroBand({
           aria-hidden="true"
           className="pointer-events-none absolute left-full top-1/2 -z-10 aspect-square h-[70%] -translate-x-[40%] -translate-y-1/2 text-brand-blue/30 md:h-[112%] dark:text-[#7dbbec]/30"
         >
-          <Globe hairline nodeScale={0.6} />
+          <Globe />
         </svg>
       ) : (
+        // Centered on the band's bottom-right corner (`left-full top-full`
+        // pulled back by half its own size), so the band shows the globe's
+        // top-left quarter. Sized by width on phones (a small corner piece)
+        // and by the band's height from tablet width up.
         <svg
-          viewBox="0 0 460 300"
-          preserveAspectRatio="xMaxYMid meet"
+          viewBox="170 20 260 260"
+          preserveAspectRatio="xMidYMid meet"
           aria-hidden="true"
-          className="pointer-events-none absolute inset-y-0 right-0 -z-10 h-full w-[min(55%,460px)] text-brand-blue/30 dark:text-[#7dbbec]/30"
+          className="pointer-events-none absolute left-full top-full -z-10 aspect-square w-[95vw] -translate-x-1/2 -translate-y-1/2 text-brand-blue/30 md:h-[185%] md:w-auto dark:text-[#7dbbec]/30"
         >
-          <Globe hairline={false} nodeScale={1} />
+          <Globe />
         </svg>
       )}
       {children}

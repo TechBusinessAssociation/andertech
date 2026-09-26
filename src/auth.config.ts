@@ -20,6 +20,10 @@ export const authConfig: NextAuthConfig = {
     Google({
       clientId: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      // Always show Google's account chooser. Without this, someone signed in
+      // to Google as a personal account is silently signed in with it, and
+      // has no way to pick the account they are actually a member under.
+      authorization: { params: { prompt: "select_account" } },
     }),
   ],
   session: { strategy: "jwt" },
