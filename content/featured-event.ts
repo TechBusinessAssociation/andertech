@@ -2,10 +2,10 @@
 // Edit this file to change it, or set `featuredEvent` to null to hide it.
 // Everything here is public.
 //
-// The card hides itself the day after `date`, so nobody has to remember to
-// remove it. (The home page is rebuilt about hourly, see `revalidate` in
-// src/app/page.tsx, so it disappears within an hour of midnight, LA time.)
-// To feature the next event, replace the values below.
+// The card stays until you change this file: after the event, replace the
+// values with the next event, or set `featuredEvent` to null to remove it.
+// (It deliberately doesn't hide itself by date: that would need the home page
+// to re-render on a schedule instead of being plain static files on the CDN.)
 
 export type FeaturedEvent = {
   // Small label above the title.
@@ -15,7 +15,7 @@ export type FeaturedEvent = {
   theme: string;
   // Who presents it.
   presentedBy: string;
-  // YYYY-MM-DD, in Los Angeles time. The card is shown through this day.
+  // YYYY-MM-DD. Used for the machine-readable date on the card.
   date: string;
   dateLabel: string;
   timeLabel: string;
@@ -52,16 +52,3 @@ export const featuredEvent: FeaturedEvent | null = {
   // { label: "Register", href: "https://..." }
   link: null,
 };
-
-// Today's date in Los Angeles as YYYY-MM-DD ("en-CA" formats that way).
-function laToday(): string {
-  return new Intl.DateTimeFormat("en-CA", {
-    timeZone: "America/Los_Angeles",
-  }).format(new Date());
-}
-
-// Show the card through the event day. `today` is only a parameter so this
-// can be tested; callers leave it out.
-export function isUpcoming(event: FeaturedEvent, today: string = laToday()): boolean {
-  return today <= event.date;
-}

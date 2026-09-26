@@ -1,6 +1,11 @@
 // Board members. Add one entry per person, newest board each year.
 // Only add a name, bio or photo with that person's consent.
-// Photos go in /public/board and are referenced like "/board/jane.jpg".
+//
+// The home page shows the board group photo (`boardPhoto` below), then the
+// leadership up front: any role starting with "President" or "EVP" is shown as
+// leadership, and every other role (the vice presidents) goes in the
+// collapsed "Vice presidents" list. Keep that wording in roles and the split
+// works on its own; the order here is the order shown.
 //
 // This list (name + role only, no bios or photos) was sourced from
 // AnderTech's official Anderson club page as a starting point:
@@ -13,6 +18,22 @@ export type BoardMember = {
   role: string;
   bio?: string;
   photo?: string;
+};
+
+// The board group photo on the home page. One file in public/photos/, one path
+// here. width/height are the file's real pixel size (it is shown uncropped so
+// nobody is cut out of the group). Set to null to hide it. Update it, and get
+// everyone's OK, each year when the board changes (Rule 7).
+export const boardPhoto: {
+  src: string;
+  alt: string;
+  width: number;
+  height: number;
+} | null = {
+  src: "/photos/board-2026.avif",
+  alt: "The AnderTech board posing together on an outdoor staircase",
+  width: 2000,
+  height: 671,
 };
 
 export const board: BoardMember[] = [

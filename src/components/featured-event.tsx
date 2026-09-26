@@ -1,14 +1,14 @@
-import { featuredEvent, isUpcoming } from "../../content/featured-event";
+import { featuredEvent } from "../../content/featured-event";
 
 // The "Coming up" card under the hero: one featured event, from
-// content/featured-event.ts. It renders nothing when there is no featured
-// event or the event day has passed, so it can be left in place safely.
+// content/featured-event.ts. It renders nothing when featuredEvent is null;
+// after the event, replace the content or set it to null.
 // Poster-style navy panel (title, theme, when and where) beside an agenda
 // panel; stacked on phones. No JavaScript and no session, so the home page
 // stays static.
 export function FeaturedEvent() {
   const event = featuredEvent;
-  if (!event || !isUpcoming(event)) return null;
+  if (!event) return null;
 
   return (
     <section

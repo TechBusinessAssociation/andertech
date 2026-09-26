@@ -9,13 +9,6 @@ import { WhatWeDoSection } from "@/components/what-we-do-section";
 // events. It reads no session, so it is prerendered and served from the CDN
 // -- keep it that way (see src/components/header.tsx). All text and links
 // come from /content so the board can edit them without touching code.
-//
-// `revalidate` re-renders the static page in the background at most once an
-// hour. It is what lets the featured event card hide itself after its date
-// (the card compares against today's date when the page is rendered); the
-// page is still served as static files from the CDN.
-export const revalidate = 3600;
-
 export default function Home() {
   return (
     <main className="flex-1">
