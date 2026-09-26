@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { HeaderActions } from "./header-actions";
 import { HeaderFrame } from "./header-frame";
 import { Logo } from "./logo";
 import { site } from "../../content/site";
@@ -11,8 +12,8 @@ import { site } from "../../content/site";
 // (auth(), cookies(), headers()) in here: this sits in the root layout, so
 // doing so makes every page -- including the public landing page -- render
 // on each request instead of being served as static files from the CDN.
-// The "Members" link works for everyone: /members sends signed-out visitors
-// to /sign-in itself, and signed-in members straight through.
+// Anything that depends on who is signed in (the Admin console link) is
+// fetched by the browser afterwards, in <HeaderActions />.
 export function Header() {
   return (
     <header className="border-b border-zinc-200 bg-white">
@@ -21,12 +22,7 @@ export function Header() {
           <Logo className="h-9 w-auto" />
         </Link>
 
-        <Link
-          href="/members"
-          className="text-sm text-zinc-600 underline hover:text-zinc-900"
-        >
-          Members
-        </Link>
+        <HeaderActions />
       </HeaderFrame>
     </header>
   );
