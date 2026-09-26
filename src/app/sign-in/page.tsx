@@ -7,7 +7,6 @@ import {
   authButtonPrimary,
   eyebrowClass,
 } from "@/components/auth-shell";
-import { IconTile } from "@/components/icons";
 import { isAdmin } from "@/lib/admin";
 import { isApprovedMember } from "@/lib/members-db";
 import { site } from "../../../content/site";
@@ -64,7 +63,6 @@ export default async function SignInPage({ searchParams }: SignInPageProps) {
 
   return (
     <AuthShell labelledBy="signin-heading">
-      <IconTile name="people" />
 
       <div className="grid gap-2">
         <span className={eyebrowClass}>Members</span>

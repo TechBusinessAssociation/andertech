@@ -12,7 +12,11 @@ export function AuthShell({
 }) {
   return (
     <main className="flex flex-1 flex-col">
-      <HeroBand labelledBy={labelledBy} className="flex flex-1 items-center">
+      <HeroBand
+        labelledBy={labelledBy}
+        className="flex flex-1 items-center"
+        art="large"
+      >
         <div className="mx-auto w-full max-w-5xl px-5 py-10 md:py-16">
           <div className="mx-auto grid w-full max-w-md gap-5 rounded-2xl border border-white/70 bg-white/85 p-6 text-brand-navy shadow-sm backdrop-blur-sm md:p-8 dark:border-white/10 dark:bg-zinc-900/85 dark:text-zinc-100">
             {children}

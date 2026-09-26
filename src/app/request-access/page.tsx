@@ -5,7 +5,6 @@ import {
   authInputClass,
   eyebrowClass,
 } from "@/components/auth-shell";
-import { IconTile } from "@/components/icons";
 import { site } from "../../../content/site";
 import { requestAccessAction } from "./actions";
 
@@ -29,7 +28,6 @@ export default async function RequestAccessPage({ searchParams }: Props) {
   if (sent === "1") {
     return (
       <AuthShell labelledBy="request-heading">
-        <IconTile name="people" />
         <div className="grid gap-2">
           <span className={eyebrowClass}>Request access</span>
           <h1
@@ -53,7 +51,6 @@ export default async function RequestAccessPage({ searchParams }: Props) {
 
   return (
     <AuthShell labelledBy="request-heading">
-      <IconTile name="people" />
 
       <div className="grid gap-2">
         <span className={eyebrowClass}>Request access</span>
