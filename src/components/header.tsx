@@ -1,18 +1,18 @@
 import Link from "next/link";
 import { Logo } from "./logo";
 import { site } from "../../content/site";
-import { auth, signOut } from "@/auth";
-import { isAdminEmail } from "@/lib/admin";
 
 // Simple site header. Kept on a fixed white plate (not dark-mode aware) --
 // the logo's own colors are the brand, and a fixed light background keeps
 // it readable without needing a separate dark-mode version of the logo.
 //
-// Shown on every page, including public ones -- a "Members" sign-in link
-// leaks nothing, and this is the only discoverable way to reach /members.
-export async function Header() {
-  const session = await auth();
-
+// Shown on every page, including public ones. Do NOT read the session
+// (auth(), cookies(), headers()) in here: this sits in the root layout, so
+// doing so makes every page -- including the public landing page -- render
+// on each request instead of being served as static files from the CDN.
+// The "Members" link works for everyone: /members sends signed-out visitors
+// to /sign-in itself, and signed-in members straight through.
+export function Header() {
   return (
     <header className="border-b border-zinc-200 bg-white">
       <div className="mx-auto flex max-w-2xl items-center justify-between px-6 py-4">
@@ -20,38 +20,12 @@ export async function Header() {
           <Logo className="h-9 w-auto" />
         </Link>
 
-        {session?.user ? (
-          <div className="flex items-center gap-4">
-            {isAdminEmail(session.user.email) && (
-              <Link
-                href="/admin"
-                className="text-sm text-zinc-600 underline hover:text-zinc-900"
-              >
-                Admin
-              </Link>
-            )}
-            <form
-              action={async () => {
-                "use server";
-                await signOut({ redirectTo: "/" });
-              }}
-            >
-              <button
-                type="submit"
-                className="text-sm text-zinc-600 underline hover:text-zinc-900"
-              >
-                Sign out
-              </button>
-            </form>
-          </div>
-        ) : (
-          <Link
-            href="/sign-in"
-            className="text-sm text-zinc-600 underline hover:text-zinc-900"
-          >
-            Members
-          </Link>
-        )}
+        <Link
+          href="/members"
+          className="text-sm text-zinc-600 underline hover:text-zinc-900"
+        >
+          Members
+        </Link>
       </div>
     </header>
   );
