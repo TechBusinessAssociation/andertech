@@ -1,6 +1,6 @@
 import { resourceKind } from "@/lib/resource-kind";
 import type { MemberResource } from "@/lib/members-db";
-import { Icon, IconTile } from "./icons";
+import { Icon, IconTile } from "@/components/icons";
 
 // Big cards for the resources the board pinned (a checkbox on
 // /admin/resources). Hidden entirely when nothing is pinned.
