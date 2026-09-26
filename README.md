@@ -21,12 +21,16 @@ All editable text and links live in the `content/` folder. You do not need to to
 
 | To change | Edit |
 |-----------|------|
-| Club name, tagline, contact email | `content/site.ts` |
-| Join survey link, calendar embed, social links | `content/links.ts` |
+| Club name, tagline, contact email, the three "what we do" cards, feedback email subject | `content/site.ts` |
+| Calendar embed, social links (and the join survey link, currently not shown) | `content/links.ts` |
 | Board members (name, role, bio, photo) | `content/board.ts` |
 | Logo (header) | Replace `public/brand/logo.png` with a same-named file, or change the path in `content/site.ts` |
 | Favicon (browser tab) | Replace `src/app/favicon.ico` |
 | Brand colors | `src/app/globals.css`, the `--color-brand-*` values |
+
+The **"Join AnderTech" button is hidden for now**: the landing page no longer shows it, but the welcome-survey link is still in `content/links.ts` (`joinSurvey`). To bring the button back, add it to `src/components/landing-hero.tsx`. The landing page's "Contact us" button and the members page's feedback email both use the club inbox in `content/site.ts` (`contactEmail`); feedback emails start with the subject prefix `feedbackSubject` ("AnderTech Website Feedback") so you can filter them in the inbox.
+
+**Light and dark mode:** the button at the top right switches between them and remembers the choice on that device. Until someone picks, the site follows their device's setting. The header stays white in both modes so the logo stays readable.
 
 A link set to `null` is hidden or disabled on the site. Only add a board member's name, bio or photo with that person's consent. Board photos go in `public/board/`. See `design-reference/README.md` for where the current logo and colors came from.
 
