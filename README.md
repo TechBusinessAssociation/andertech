@@ -24,6 +24,9 @@ All editable text and links live in the `content/` folder. You do not need to to
 | Club name, tagline, contact email, the three "what we do" cards, feedback email subject | `content/site.ts` |
 | Calendar embed, social links (and the join survey link, currently not shown) | `content/links.ts` |
 | Board members (name, role, bio, photo) | `content/board.ts` |
+| Board group photo on the home page | `boardPhoto` in `content/board.ts`; put the image in `public/photos/` and update the path, size and description. Get everyone's OK before using it, and update it when the board changes. |
+| The "Coming up" featured event card on the home page | `content/featured-event.ts` (title, date, agenda, optional RSVP link). It stays until you change it: after the event, replace the content or set `featuredEvent` to `null`. |
+| "What we do" chapters on the home page (copy, programs, photos) | `content/programs.ts`. To add a photo, put the image in `public/photos/` (about 1600px wide, under ~400 KB) and set the chapter's `photo` to `{ src: "/photos/name.jpg", alt: "what it shows" }`. Until a chapter has a photo it shows a numbered panel. Only use photos of people who agreed to appear. |
 | Logo (header) | Replace `public/brand/logo.png` with a same-named file, or change the path in `content/site.ts` |
 | Favicon (browser tab) | Replace `src/app/favicon.ico` |
 | Brand colors | `src/app/globals.css`, the `--color-brand-*` values |
