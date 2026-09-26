@@ -9,8 +9,10 @@
 // Technology Career Night, Tech Treks, Days-on-the-Job, alumni mentorship,
 // cross-club collaborations, interview prep and case workshops, APIC) and the
 // 2023-24 event planner (function deep-dives, Crypto & Web3 101, career
-// mixers, the Emerging Technology Summit, the Unchained Blockchain Conference,
-// the APIC final pitch). Programs change with each board: keep this list
+// mixers, the APIC final pitch), checked against Anderson's public pages: the
+// Emerging Tech Conference (with the Entrepreneur Association; 2026 edition
+// listed for May 29, 2026) and Unchained: Blockchain Business Forum (ran 2023-
+// 2025; no 2026 edition found). Programs change with each board: keep this list
 // honest by deleting anything that no longer runs.
 //
 // PHOTOS: a chapter's `photo` is null until you add one. To add it, put the
@@ -64,7 +66,7 @@ export const chapters: Chapter[] = [
       },
       {
         title: "Flagship conferences",
-        blurb: "Past events include the Anderson Emerging Technology Summit and the Unchained Blockchain Conference.",
+        blurb: "Co-hosted with the Entrepreneur Association: the annual Emerging Tech Conference, and past editions of Unchained: Blockchain Business Forum.",
       },
     ],
     photo: null,
