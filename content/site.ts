@@ -11,10 +11,30 @@ export const site = {
   description:
     "AnderTech helps members launch or advance careers in tech and tech-driven industries through educational programming, networking, and career development.",
   // Use a club/shared inbox, never a personal address. null hides it.
-  // Anderson's club page only lists individual officer @anderson.ucla.edu
-  // addresses -- those are personal, not a club inbox, so don't use them
-  // here. Fill this in once the club has a shared inbox.
-  contactEmail: null as string | null,
+  contactEmail:
+    "tech.business.association@anderson.ucla.edu" as string | null,
+  // Subject prefix on feedback emails from the members page ("Broken link or
+  // missing something?"), so the board can filter them in the shared inbox.
+  feedbackSubject: "AnderTech Website Feedback",
+  // The three things the club does, shown on the home page. `icon` must be
+  // one of: cap, people, chart, brief, folder (see src/components/icons.tsx).
+  pillars: [
+    {
+      title: "Educational programming",
+      blurb: "Workshops and deep-dives on how the tech industry works.",
+      icon: "cap",
+    },
+    {
+      title: "Networking opportunities",
+      blurb: "Meet founders, alumni and recruiters, on campus and beyond.",
+      icon: "people",
+    },
+    {
+      title: "Career development",
+      blurb: "Resume, interview and recruiting support for tech roles.",
+      icon: "chart",
+    },
+  ] as { title: string; blurb: string; icon: "cap" | "people" | "chart" | "brief" | "folder" }[],
   // Logo shown in the header. To swap the logo image itself, just replace
   // public/brand/logo.png with a same-named file -- every place that uses
   // <Logo /> (src/components/logo.tsx) picks it up automatically. To use a

@@ -1,6 +1,5 @@
 import { redirect } from "next/navigation";
 import { auth, signOut } from "@/auth";
-import { isAdmin } from "@/lib/admin";
 import {
   getFeaturedResources,
   getResourceGroups,
@@ -32,11 +31,10 @@ export default async function MembersPage({ searchParams }: Props) {
   }
 
   const params = await searchParams;
-  const [groups, featured, events, admin] = await Promise.all([
+  const [groups, featured, events] = await Promise.all([
     getResourceGroups(),
     getFeaturedResources(),
     getUpcomingEvents(),
-    isAdmin(email),
   ]);
 
   const q = (params.q ?? "").slice(0, 100);
@@ -54,7 +52,10 @@ export default async function MembersPage({ searchParams }: Props) {
         <NextUp events={events} />
         <StartHere resources={featured} />
         <Browse groups={groups} q={q} cat={cat} />
-        <FooterCards isAdmin={admin} contactEmail={site.contactEmail} />
+        <FooterCards
+          contactEmail={site.contactEmail}
+          subjectPrefix={site.feedbackSubject}
+        />
 
         <form
           className="pb-10 text-center"
