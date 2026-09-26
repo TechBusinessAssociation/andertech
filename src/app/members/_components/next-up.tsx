@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { dateParts, timeRange } from "@/lib/event-format";
+import { categoryTone } from "@/lib/event-tone";
 import type { MemberEvent } from "@/lib/members-db";
 
 // The next three events as calendar-style tiles. On a phone they sit in one
@@ -30,7 +31,7 @@ export function NextUp({ events }: { events: MemberEvent[] }) {
           {items.map((event) => {
             const { month, day, weekday } = dateParts(event.event_date);
             const time = timeRange(event);
-            const education = event.category.toLowerCase() === "education";
+            const tone = categoryTone(event.category);
             return (
               <li
                 key={event.id}
@@ -40,16 +41,16 @@ export function NextUp({ events }: { events: MemberEvent[] }) {
                   href="/members/events"
                   className="grid h-full grid-cols-[auto_1fr] content-start gap-3.5 rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm hover:border-brand-blue dark:border-zinc-800 dark:bg-zinc-900"
                 >
-                  <div className="grid h-fit w-14 rounded-[10px] bg-brand-sky pb-2 pt-2 text-center leading-none dark:bg-[#14324d]">
-                    <span className="text-[11px] font-bold tracking-widest text-brand-blue dark:text-[#7dbbec]">
+                  <div
+                    className={`grid h-fit w-14 rounded-[10px] pb-2 pt-2 text-center leading-none ${tone.chip}`}
+                  >
+                    <span className="text-[11px] font-bold tracking-widest">
                       {month}
                     </span>
                     <span className="mt-1 text-2xl font-semibold tabular-nums">
                       {day}
                     </span>
-                    <span className="mt-1 text-[11px] text-zinc-500 dark:text-zinc-400">
-                      {weekday}
-                    </span>
+                    <span className="mt-1 text-[11px] opacity-75">{weekday}</span>
                   </div>
                   <div className="min-w-0">
                     <h3 className="text-[15px] font-semibold leading-snug">
@@ -61,11 +62,7 @@ export function NextUp({ events }: { events: MemberEvent[] }) {
                       </p>
                     )}
                     <span
-                      className={`mt-2.5 inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                        education
-                          ? "bg-brand-sky text-brand-blue dark:bg-[#14324d] dark:text-[#7dbbec]"
-                          : "bg-brand-cream text-amber-700 dark:bg-[#33290f] dark:text-brand-gold"
-                      }`}
+                      className={`mt-2.5 inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${tone.chip}`}
                     >
                       {event.category}
                     </span>

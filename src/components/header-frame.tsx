@@ -12,7 +12,7 @@ export function HeaderFrame({ children }: { children: React.ReactNode }) {
     : "max-w-5xl px-5";
 
   return (
-    <div className={`mx-auto flex items-center justify-between py-3 ${width}`}>
+    <div className={`mx-auto flex items-center justify-between gap-2 py-3 ${width}`}>
       {children}
     </div>
   );

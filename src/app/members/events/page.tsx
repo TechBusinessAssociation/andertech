@@ -1,17 +1,17 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
-import { formatDay, timeRange, weekStart } from "@/lib/event-format";
-import {
-  getUpcomingEvents,
-  isApprovedMember,
-  type MemberEvent,
-} from "@/lib/members-db";
+import { HeroBand } from "@/components/hero-band";
+import { getUpcomingEvents, isApprovedMember } from "@/lib/members-db";
+import { EventsView } from "./_components/events-view";
+
+type Props = {
+  searchParams: Promise<{ cat?: string }>;
+};
 
 // Same gate as /members: middleware confirms a session, this re-checks
 // the live membership list on every load.
-
-export default async function MemberEventsPage() {
+export default async function MemberEventsPage({ searchParams }: Props) {
   const session = await auth();
   const email = session?.user?.email;
 
@@ -19,91 +19,40 @@ export default async function MemberEventsPage() {
     redirect("/sign-in");
   }
 
+  const params = await searchParams;
   const events = await getUpcomingEvents();
 
-  const weeks: { start: string; events: MemberEvent[] }[] = [];
-  for (const event of events) {
-    const start = weekStart(event.event_date);
-    let week = weeks.find((w) => w.start === start);
-    if (!week) {
-      week = { start, events: [] };
-      weeks.push(week);
-    }
-    week.events.push(event);
-  }
+  // Ignore a ?cat= that isn't a real category rather than showing nothing.
+  const cat = events.some((event) => event.category === params.cat)
+    ? (params.cat ?? null)
+    : null;
 
   return (
-    <main className="mx-auto flex max-w-2xl flex-1 flex-col gap-8 px-6 py-16">
-      <div className="flex flex-col gap-2">
-        <Link
-          href="/members"
-          className="text-sm text-zinc-600 underline hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
-        >
-          Back to members
-        </Link>
-        <h1 className="text-3xl font-semibold tracking-tight">
-          Upcoming events
-        </h1>
-        <p className="text-sm text-zinc-600 dark:text-zinc-400">
-          Members-only. All times Pacific.
-        </p>
-      </div>
+    <main className="flex-1">
+      <HeroBand labelledBy="events-heading">
+        <div className="mx-auto max-w-5xl px-5 py-8 md:py-12">
+          <Link
+            href="/members"
+            className="inline-flex min-h-11 items-center text-sm font-medium text-brand-navy/80 hover:underline dark:text-white/80"
+          >
+            &larr; Members
+          </Link>
+          <h1
+            id="events-heading"
+            className="mt-1 text-4xl font-semibold leading-[1.05] tracking-tight text-balance md:text-5xl"
+          >
+            Upcoming events
+          </h1>
+          <p className="mt-3 max-w-[46ch] text-base text-brand-navy/75 md:text-[17px] dark:text-white/75">
+            Members-only. All times Pacific.
+            {events.length > 0 && ` ${events.length} coming up.`}
+          </p>
+        </div>
+      </HeroBand>
 
-      {weeks.length === 0 ? (
-        <p className="text-zinc-600 dark:text-zinc-400">
-          No upcoming events yet.
-        </p>
-      ) : (
-        weeks.map((week) => (
-          <section key={week.start} className="flex flex-col gap-4">
-            <h2 className="text-sm font-semibold uppercase tracking-wide text-zinc-600 dark:text-zinc-400">
-              Week of {formatDay(week.start)}
-            </h2>
-            <ul className="flex flex-col gap-4">
-              {week.events.map((event) => {
-                const time = timeRange(event);
-                return (
-                  <li
-                    key={event.id}
-                    className="flex flex-col gap-1 rounded-lg border border-zinc-200 p-4 dark:border-zinc-800"
-                  >
-                    <div className="flex flex-wrap items-center gap-2 text-sm text-zinc-600 dark:text-zinc-400">
-                      <span className="font-medium text-zinc-900 dark:text-zinc-100">
-                        {formatDay(event.event_date)}
-                        {time ? `, ${time}` : ""}
-                      </span>
-                      <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-xs dark:bg-zinc-800">
-                        {event.category}
-                      </span>
-                    </div>
-                    <h3 className="text-lg font-semibold">{event.title}</h3>
-                    {event.location && (
-                      <p className="text-sm text-zinc-600 dark:text-zinc-400">
-                        {event.location}
-                      </p>
-                    )}
-                    {event.description && (
-                      <p className="text-sm text-zinc-700 dark:text-zinc-300">
-                        {event.description}
-                      </p>
-                    )}
-                    {event.url && (
-                      <a
-                        href={event.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="w-fit text-sm text-brand-navy underline dark:text-brand-blue"
-                      >
-                        Details / RSVP
-                      </a>
-                    )}
-                  </li>
-                );
-              })}
-            </ul>
-          </section>
-        ))
-      )}
+      <div className="mx-auto max-w-5xl px-5 pb-16 pt-8 md:pt-10">
+        <EventsView events={events} cat={cat} />
+      </div>
     </main>
   );
 }

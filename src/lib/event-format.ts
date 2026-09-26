@@ -72,3 +72,65 @@ export function dateParts(ymd: string): {
     }),
   };
 }
+
+// "October 2026", for the month headings on the events list.
+export function monthLabel(ymd: string): string {
+  return parseDate(ymd).toLocaleDateString("en-US", {
+    month: "long",
+    year: "numeric",
+    timeZone: "UTC",
+  });
+}
+
+// A friendly "how soon" badge: Today, Tomorrow, In 5 days. Only for the next
+// two weeks (further out it would just be noise); null otherwise.
+export function relativeLabel(days: number): string | null {
+  if (days < 0 || days > 14) return null;
+  if (days === 0) return "Today";
+  if (days === 1) return "Tomorrow";
+  return `In ${days} days`;
+}
+
+// "HH:MM" -> minutes after midnight.
+function toMinutes(hhmm: string): number {
+  const [h, m] = hhmm.split(":").map(Number);
+  return h * 60 + m;
+}
+
+// YYYYMMDD[THHMMSS] as Google Calendar wants it (local time, no separators).
+function calStamp(ymd: string, minutes?: number): string {
+  const day = ymd.replaceAll("-", "");
+  if (minutes === undefined) return day;
+  const h = String(Math.floor(minutes / 60)).padStart(2, "0");
+  const m = String(minutes % 60).padStart(2, "0");
+  return `${day}T${h}${m}00`;
+}
+
+// A link that opens Google Calendar's "new event" form already filled in, so a
+// member can add the event to their own calendar. No backend and no data leaves
+// the site until they click it. Events with no start time become all-day; one
+// with no end time lasts an hour. All events are in Los Angeles time.
+export function googleCalendarUrl(event: MemberEvent): string {
+  let dates: string;
+  if (event.start_time) {
+    const start = toMinutes(event.start_time);
+    const end = event.end_time
+      ? toMinutes(event.end_time)
+      : Math.min(start + 60, 23 * 60 + 59);
+    dates = `${calStamp(event.event_date, start)}/${calStamp(event.event_date, Math.max(end, start))}`;
+  } else {
+    const next = parseDate(event.event_date);
+    next.setUTCDate(next.getUTCDate() + 1);
+    dates = `${calStamp(event.event_date)}/${calStamp(next.toISOString().slice(0, 10))}`;
+  }
+  const details = [event.description, event.url].filter(Boolean).join("\n\n");
+  const params = new URLSearchParams({
+    action: "TEMPLATE",
+    text: event.title,
+    dates,
+    ctz: "America/Los_Angeles",
+  });
+  if (event.location) params.set("location", event.location);
+  if (details) params.set("details", details.slice(0, 800));
+  return `https://calendar.google.com/calendar/render?${params.toString()}`;
+}
