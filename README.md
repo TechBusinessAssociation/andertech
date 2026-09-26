@@ -41,14 +41,19 @@ A link set to `null` is hidden or disabled on the site. Only add a board member'
 
 `/members` requires signing in with Google, checked against an approved-member list. `/admin` is the same, plus an extra check (see below). Nothing about day-to-day use of either involves editing code.
 
-**To add or remove a member, or a resource link (e.g. the recruiting dashboard): go to `/admin`** while signed in with an email listed in the `ADMIN_EMAILS` env var. It's a simple page: paste one or more emails to add members in bulk, search to find and remove one, and a small form for resource links. No SQL, no spreadsheet.
+**To add or remove a member, resource link, resource category or members-only event: go to `/admin`** while signed in with an email listed in the `ADMIN_EMAILS` env var. It's a simple page: paste one or more emails to add members in bulk, search to find and remove one, and forms for categories, resource links and events. No SQL, no spreadsheet.
+
+- **Categories** are the groups on `/members` (e.g. Prepare, Find roles). The number next to each sets the order, lowest first; leave gaps (10, 20, 30) so you can slot a new one in. A category can't be removed while resources still use it.
+- **Resources** are links (Drive, Looker Studio, a Google Form, ...). Each one belongs to a category.
+- **Events** appear on `/members/events`: upcoming ones only, grouped by week, times in Pacific. Past events drop off automatically but stay in `/admin` until removed.
+- **Giving a new member access to the linked files is a second step.** Adding their email on `/admin` lets them sign in to the site; the Drive files also need to be shared with them (ideally via a Google Group), because the site can't unlock those files.
 
 Important about resource links: **that list is a convenience directory, not real security for whatever it links to.** The recruiting dashboard's real access control is Looker Studio's own sharing settings -- share it with each approved member's Google account (or a Google Group) there too, or this login doesn't actually stop anyone with the link from opening it.
 
 **One-time setup**, done once and then forgotten about:
 1. **Google Cloud Console:** OAuth consent screen (External audience, Published -- not "Testing," which caps sign-ins at 100 people) → OAuth 2.0 Client ID (Web application). Redirect URIs: `http://localhost:3000/api/auth/callback/google` and `https://<your-domain>/api/auth/callback/google`.
 2. **Vercel dashboard → Storage → Create Database → Postgres**, connect it to this project (this auto-injects `POSTGRES_URL`). No separate signup or admin approval needed beyond your existing Vercel access.
-3. Run `schema.sql` (in this repo) once against that database -- easiest from the database's own Query tab in the Vercel dashboard.
+3. Run `schema.sql` (in this repo) once against that database -- easiest from the database's own Query tab in the Vercel dashboard. It is safe to re-run, so if `schema.sql` gains new tables later (as it did for categories and events), just run it again.
 4. Set the env vars in `.env.local.example` for real, in Vercel's dashboard (Project → Settings → Environment Variables) -- never in this repo. Include your own email in `ADMIN_EMAILS` so you can reach `/admin` to add everyone else.
 
 ## Where things live
@@ -60,7 +65,8 @@ Important about resource links: **that list is a convenience directory, not real
 | Welcome survey | Google Form (link in `content/links.ts`) |
 | Events | Public Google Calendar, embedded on the site. Edit events in Google Calendar, not in code. |
 | Recruiting dashboard | Looker Studio (access controlled by its own sharing list; never embed it here). Linked from `/members`, but that link isn't what protects it. |
-| Members-only resources | Files still live in a private SharePoint library. `/members` shows a directory of links (edited on `/admin`), not the files themselves. |
+| Members-only resources | Files live in Google Drive (or SharePoint) with restricted sharing. `/members` shows a directory of links grouped by category (edited on `/admin`), not the files themselves. |
+| Members-only events | Vercel Postgres (`events` table), edited on `/admin`, shown on `/members/events`. The public calendar above is separate. |
 | Membership list | Vercel Postgres, edited via `/admin`. Not in this repo -- see "Members area" above. |
 | Domain | Not set up yet. Using the free `*.vercel.app` address. |
 
