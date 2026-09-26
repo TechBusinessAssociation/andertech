@@ -36,6 +36,7 @@ export type MemberResource = {
   description: string | null;
   category_id: number | null;
   category_name: string | null;
+  featured: boolean;
 };
 
 export type ResourceGroup = {
@@ -49,7 +50,7 @@ export type ResourceGroup = {
 export async function getResourceGroups(): Promise<ResourceGroup[]> {
   try {
     const { rows } = await sql`
-      select r.id, r.label, r.url, r.description, r.category_id,
+      select r.id, r.label, r.url, r.description, r.category_id, r.featured,
              c.name as category_name, c.description as category_description
       from resources r
       left join categories c on c.id = r.category_id
@@ -70,6 +71,24 @@ export async function getResourceGroups(): Promise<ResourceGroup[]> {
       group.resources.push(row as MemberResource);
     }
     return groups;
+  } catch {
+    return [];
+  }
+}
+
+// Resources the board pinned to the "Start here" row, in category order.
+export async function getFeaturedResources(): Promise<MemberResource[]> {
+  try {
+    const { rows } = await sql`
+      select r.id, r.label, r.url, r.description, r.category_id, r.featured,
+             c.name as category_name
+      from resources r
+      left join categories c on c.id = r.category_id
+      where r.featured
+      order by c.sort_order asc nulls last, r.sort_order asc, r.label asc
+      limit 6
+    `;
+    return rows as MemberResource[];
   } catch {
     return [];
   }
@@ -337,7 +356,7 @@ export type AdminResource = MemberResource & { sort_order: number };
 export async function getAdminResources(): Promise<AdminResource[]> {
   const { rows } = await sql`
     select r.id, r.label, r.url, r.description, r.category_id, r.sort_order,
-           c.name as category_name
+           r.featured, c.name as category_name
     from resources r
     left join categories c on c.id = r.category_id
     order by c.sort_order asc nulls last, c.name asc, r.sort_order asc, r.label asc
@@ -351,14 +370,16 @@ export async function addResource(input: {
   description: string;
   categoryId: number;
   sortOrder: number;
+  featured: boolean;
 }): Promise<boolean> {
   const label = input.label.trim();
   const url = cleanUrl(input.url);
   if (!label || !url) return false;
   await sql`
-    insert into resources (label, url, description, category_id, sort_order)
+    insert into resources
+      (label, url, description, category_id, sort_order, featured)
     values (${label}, ${url}, ${emptyToNull(input.description)},
-            ${input.categoryId}, ${input.sortOrder})
+            ${input.categoryId}, ${input.sortOrder}, ${input.featured})
   `;
   return true;
 }
@@ -371,6 +392,7 @@ export async function updateResource(
     description: string;
     categoryId: number;
     sortOrder: number;
+    featured: boolean;
   },
 ): Promise<boolean> {
   const label = input.label.trim();
@@ -380,7 +402,8 @@ export async function updateResource(
     update resources
     set label = ${label}, url = ${url},
         description = ${emptyToNull(input.description)},
-        category_id = ${input.categoryId}, sort_order = ${input.sortOrder}
+        category_id = ${input.categoryId}, sort_order = ${input.sortOrder},
+        featured = ${input.featured}
     where id = ${id}
   `;
   return true;

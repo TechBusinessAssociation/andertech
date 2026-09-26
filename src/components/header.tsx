@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { HeaderFrame } from "./header-frame";
 import { Logo } from "./logo";
 import { site } from "../../content/site";
 
@@ -15,7 +16,7 @@ import { site } from "../../content/site";
 export function Header() {
   return (
     <header className="border-b border-zinc-200 bg-white">
-      <div className="mx-auto flex max-w-2xl items-center justify-between px-6 py-4">
+      <HeaderFrame>
         <Link href="/" aria-label={site.name}>
           <Logo className="h-9 w-auto" />
         </Link>
@@ -26,7 +27,7 @@ export function Header() {
         >
           Members
         </Link>
-      </div>
+      </HeaderFrame>
     </header>
   );
 }
