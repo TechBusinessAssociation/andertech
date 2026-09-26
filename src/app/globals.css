@@ -40,3 +40,58 @@ body {
   color: var(--foreground);
   font-family: var(--font-sans), system-ui, sans-serif;
 }
+
+/* Flip button (src/components/flip-button.tsx): the front face (an icon)
+   turns away on hover or keyboard focus to show the back face (a label). Only
+   the inner layer rotates, so the focus ring on the link itself stays put.
+   For people who ask for reduced motion the faces cross-fade instead. */
+.flip {
+  perspective: 600px;
+}
+.flip-inner {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transition: transform 0.55s cubic-bezier(0.4, 0.2, 0.2, 1);
+}
+.flip:hover .flip-inner,
+.flip:focus-visible .flip-inner {
+  transform: rotateY(180deg);
+}
+.flip-face {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+.flip-back {
+  transform: rotateY(180deg);
+}
+@media (prefers-reduced-motion: reduce) {
+  .flip-inner,
+  .flip:hover .flip-inner,
+  .flip:focus-visible .flip-inner {
+    transform: none;
+    transform-style: flat;
+    transition: none;
+  }
+  .flip-face {
+    transition: opacity 0.2s ease;
+  }
+  .flip-back {
+    transform: none;
+    opacity: 0;
+  }
+  .flip:hover .flip-back,
+  .flip:focus-visible .flip-back {
+    opacity: 1;
+  }
+  .flip:hover .flip-front,
+  .flip:focus-visible .flip-front {
+    opacity: 0;
+  }
+}
