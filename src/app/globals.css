@@ -58,7 +58,7 @@ body {
 }
 .flip:hover .flip-inner,
 .flip:focus-visible .flip-inner {
-  transform: rotateY(180deg);
+  transform: rotateX(180deg);
 }
 .flip-face {
   position: absolute;
@@ -69,7 +69,7 @@ body {
   -webkit-backface-visibility: hidden;
 }
 .flip-back {
-  transform: rotateY(180deg);
+  transform: rotateX(180deg);
 }
 @media (prefers-reduced-motion: reduce) {
   .flip-inner,
