@@ -29,7 +29,7 @@ export default async function AdminRequestsPage({ searchParams }: Props) {
   await requireAdmin();
 
   const { notice } = await searchParams;
-  const { pending, decided } = await getAccessRequests();
+  const { pending, decided, setupNeeded } = await getAccessRequests();
 
   return (
     <div className="flex flex-col gap-6">
@@ -38,8 +38,14 @@ export default async function AdminRequestsPage({ searchParams }: Props) {
         description="People who asked for an account on the request page. Approving adds them as a Club member; they then sign in with that Google account. Nobody is emailed automatically."
       />
 
+      {setupNeeded && (
+        <Notice message="The requests table hasn't been set up yet in this database, so requests can't be saved or shown. Run the latest schema.sql (Vercel dashboard, Storage, your database, Query tab; it is safe to run more than once), then reload this page. See the README." />
+      )}
+
       {notice && NOTICES[notice] && <Notice message={NOTICES[notice]} />}
 
+      {!setupNeeded && (
+        <>
       <section className="flex flex-col gap-3" aria-labelledby="pending-heading">
         <h2 id="pending-heading" className="font-semibold">
           Pending ({pending.length})
@@ -156,6 +162,8 @@ export default async function AdminRequestsPage({ searchParams }: Props) {
           </table>
         </div>
       </section>
+        </>
+      )}
     </div>
   );
 }

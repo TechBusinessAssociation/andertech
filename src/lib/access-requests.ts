@@ -64,29 +64,51 @@ export type AccessRequest = {
 
 // Everything below is admin-only: callers must have passed requireAdmin().
 
+// Postgres error 42P01, "undefined_table": the table hasn't been created, i.e.
+// the latest schema.sql was never run against this database.
+function isMissingTable(error: unknown): boolean {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    (error as { code?: string }).code === "42P01"
+  );
+}
+
+// `setupNeeded` is true when the access_requests table doesn't exist yet, so
+// the admin page can say how to fix it instead of crashing. Any other database
+// error is still thrown.
 export async function getAccessRequests(): Promise<{
   pending: AccessRequest[];
   decided: AccessRequest[];
+  setupNeeded: boolean;
 }> {
-  const pending = await sql`
-    select id, email, name, status, decided_by,
-           to_char(created_at at time zone 'America/Los_Angeles', 'Mon FMDD, FMHH12:MI AM') as requested,
-           null::text as decided
-    from access_requests where status = 'pending'
-    order by created_at asc
-  `;
-  const decided = await sql`
-    select id, email, name, status, decided_by,
-           to_char(created_at at time zone 'America/Los_Angeles', 'Mon FMDD, FMHH12:MI AM') as requested,
-           to_char(decided_at at time zone 'America/Los_Angeles', 'Mon FMDD, FMHH12:MI AM') as decided
-    from access_requests where status <> 'pending'
-    order by decided_at desc nulls last
-    limit 20
-  `;
-  return {
-    pending: pending.rows as AccessRequest[],
-    decided: decided.rows as AccessRequest[],
-  };
+  try {
+    const pending = await sql`
+      select id, email, name, status, decided_by,
+             to_char(created_at at time zone 'America/Los_Angeles', 'Mon FMDD, FMHH12:MI AM') as requested,
+             null::text as decided
+      from access_requests where status = 'pending'
+      order by created_at asc
+    `;
+    const decided = await sql`
+      select id, email, name, status, decided_by,
+             to_char(created_at at time zone 'America/Los_Angeles', 'Mon FMDD, FMHH12:MI AM') as requested,
+             to_char(decided_at at time zone 'America/Los_Angeles', 'Mon FMDD, FMHH12:MI AM') as decided
+      from access_requests where status <> 'pending'
+      order by decided_at desc nulls last
+      limit 20
+    `;
+    return {
+      pending: pending.rows as AccessRequest[],
+      decided: decided.rows as AccessRequest[],
+      setupNeeded: false,
+    };
+  } catch (error) {
+    if (isMissingTable(error)) {
+      return { pending: [], decided: [], setupNeeded: true };
+    }
+    throw error;
+  }
 }
 
 // For the badge in the admin menu. Fails to 0 so a database hiccup never
