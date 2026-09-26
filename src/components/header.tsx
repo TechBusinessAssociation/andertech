@@ -18,8 +18,8 @@ export function Header() {
   return (
     <header className="border-b border-zinc-200 bg-white">
       <HeaderFrame>
-        <Link href="/" aria-label={site.name}>
-          <Logo className="h-9 w-auto" />
+        <Link href="/" aria-label={site.name} className="shrink-0">
+          <Logo className="h-7 w-auto min-[380px]:h-8 sm:h-9" />
         </Link>
 
         <HeaderActions />
