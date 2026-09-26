@@ -41,10 +41,13 @@ A link set to `null` is hidden or disabled on the site. Only add a board member'
 
 `/members` requires signing in with Google, checked against an approved-member list. `/admin` is the same, plus an extra check (see below). Nothing about day-to-day use of either involves editing code.
 
-**To add or remove a member, resource link, resource category or members-only event: go to `/admin`** while signed in with an email listed in the `ADMIN_EMAILS` env var. It's a simple page: paste one or more emails to add members in bulk, search to find and remove one, and forms for categories, resource links and events. No SQL, no spreadsheet.
+**To add or remove a member, resource link, resource category or members-only event: go to `/admin`** (there's an "Admin" link on `/members` for admins). A menu down the left has **Members**, **Resources → Categories / Resources**, and **Events**. No SQL, no spreadsheet.
+
+- **Who can use `/admin`:** emails in the `ADMIN_EMAILS` env var (a permanent backstop -- keep at least one there so the club can never lock itself out), plus any member you give the **Admin** role.
+- **Members:** add many at once (paste emails, tick their roles -- Club member is ticked by default). The list below shows 10 at a time with Previous/Next and a search box (searches every member, not just the visible page). **Edit roles** on a row lets you give someone several roles, e.g. Club member + Admin. You can't remove yourself or take the Admin role from yourself.
 
 - **Categories** are the groups on `/members` (e.g. Prepare, Find roles). The number next to each sets the order, lowest first; leave gaps (10, 20, 30) so you can slot a new one in. A category can't be removed while resources still use it.
-- **Resources** are links (Drive, Looker Studio, a Google Form, ...). Each one belongs to a category.
+- **Resources** are links (Drive, Looker Studio, a Google Form, ...). Each one belongs to a category. The table shows each label as a clickable link; click the eye icon to see the full URL. Use **Edit** on a row to change it.
 - **Events** appear on `/members/events`: upcoming ones only, grouped by week, times in Pacific. Past events drop off automatically but stay in `/admin` until removed.
 - **Giving a new member access to the linked files is a second step.** Adding their email on `/admin` lets them sign in to the site; the Drive files also need to be shared with them (ideally via a Google Group), because the site can't unlock those files.
 
