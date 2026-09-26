@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { ResourceGroup } from "@/lib/members-db";
 import { categoryIcon, resourceKind } from "@/lib/resource-kind";
-import { Icon, IconTile } from "./icons";
+import { Icon, IconTile } from "@/components/icons";
 
 // Search and category filters are plain links and a GET form, so they work
 // without JavaScript and the URL can be shared (?cat=Prepare&q=resume).
