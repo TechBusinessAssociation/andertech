@@ -8,6 +8,10 @@ import { chapters, programsIntro, type Chapter } from "../../content/programs";
 // phones the order is label + statement, photo + caption, then the programs.
 // All copy and photo paths come from content/programs.ts.
 //
+// The program lists deliberately have no divider lines: they run at their own
+// spacing across the background grid (a faint line grid, see globals.css) and
+// the two sets of lines clash. Spacing alone separates the items.
+//
 // Motion is CSS only (see "Scroll-driven motion" in globals.css): each piece
 // (`reveal`) rises and fades in as it scrolls into view, staggered by
 // --r0/--r1, and the picture inside a photo frame (`drift`) moves a little
@@ -113,12 +117,12 @@ export function WhatWeDoSection() {
               </div>
 
               <ul
-                className={`divide-y divide-zinc-900/10 border-y border-zinc-900/10 md:row-start-2 dark:divide-white/10 dark:border-white/10 ${
+                className={`grid gap-6 md:row-start-2 ${
                   flip ? "md:col-start-2" : "md:col-start-1"
                 }`}
               >
                 {chapter.programs.map((program) => (
-                  <li key={program.title} className="reveal py-3.5 [--r1:20%]">
+                  <li key={program.title} className="reveal [--r1:20%]">
                     <p className="font-semibold">{program.title}</p>
                     <p className="mt-0.5 text-sm text-zinc-600 dark:text-zinc-400">
                       {program.blurb}
