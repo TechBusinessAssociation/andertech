@@ -45,6 +45,8 @@ A link set to `null` is hidden or disabled on the site. Only add a board member'
 
 `/members` requires signing in with Google, checked against an approved-member list. `/admin` is the same, plus an extra check (see below). Nothing about day-to-day use of either involves editing code.
 
+The **Login** button at the top right of every page goes to the sign-in page. Once someone is signed in it changes to **Members** (this takes about a second after the page loads), and admins also get an **Admin console** button.
+
 **To add or remove a member, resource link, resource category or members-only event: go to `/admin`** (there's an "Admin" link on `/members` for admins). A menu down the left has **Members**, **Resources → Categories / Resources**, and **Events**. No SQL, no spreadsheet.
 
 - **Who can use `/admin`:** emails in the `ADMIN_EMAILS` env var (a permanent backstop -- keep at least one there so the club can never lock itself out), plus any member you give the **Admin** role.
