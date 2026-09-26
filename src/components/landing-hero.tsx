@@ -1,12 +1,13 @@
+import { FlipButton } from "@/components/flip-button";
 import { HeroBand } from "@/components/hero-band";
 import { IconTile } from "@/components/icons";
 import { links } from "../../content/links";
 import { site } from "../../content/site";
 
 const socialLinks = [
-  { label: "Instagram", href: links.instagram },
-  { label: "Facebook", href: links.facebook },
-  { label: "LinkedIn", href: links.linkedin },
+  { label: "Instagram", icon: "instagram", href: links.instagram },
+  { label: "Facebook", icon: "facebook", href: links.facebook },
+  { label: "LinkedIn", icon: "linkedin", href: links.linkedin },
 ] as const;
 
 // Landing page hero: club name, tagline, contact and social links, and the
@@ -43,23 +44,21 @@ export function LandingHero() {
           {(site.contactEmail || activeSocials.length > 0) && (
             <div className="mt-6 flex flex-wrap items-center gap-2.5">
               {site.contactEmail && (
-                <a
+                <FlipButton
                   href={`mailto:${site.contactEmail}`}
-                  className="inline-flex min-h-11 items-center rounded-[10px] bg-brand-navy px-[18px] text-sm font-semibold text-white hover:bg-brand-blue dark:bg-brand-gold dark:text-brand-navy dark:hover:brightness-105"
-                >
-                  Contact us
-                </a>
+                  icon="mail"
+                  label="Contact us"
+                  variant="primary"
+                />
               )}
               {activeSocials.map((link) => (
-                <a
+                <FlipButton
                   key={link.label}
                   href={link.href!}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex min-h-11 items-center rounded-[10px] border border-brand-blue/30 bg-white/60 px-[18px] text-sm font-semibold text-brand-navy hover:bg-white dark:border-white/20 dark:bg-white/10 dark:text-white dark:hover:bg-white/20"
-                >
-                  {link.label}
-                </a>
+                  icon={link.icon}
+                  label={link.label}
+                  external
+                />
               ))}
             </div>
           )}

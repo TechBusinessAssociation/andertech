@@ -11,7 +11,11 @@ export type IconName =
   | "search"
   | "cap"
   | "brief"
-  | "people";
+  | "people"
+  | "mail"
+  | "instagram"
+  | "facebook"
+  | "linkedin";
 
 export type ResourceKind = { icon: IconName; label: string };
 
