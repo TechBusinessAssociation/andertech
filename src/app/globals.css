@@ -41,6 +41,33 @@ body {
   font-family: var(--font-sans), system-ui, sans-serif;
 }
 
+/* "What we do" chapters (src/components/what-we-do-section.tsx): a faint
+   graph-paper grid behind the section, echoing the network drawing in the
+   hero. It is a pseudo-element (not the section itself) so the edge fade below
+   only affects the grid, never the text on top of it. */
+.chapters-grid {
+  position: relative;
+  isolation: isolate;
+}
+.chapters-grid::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image:
+    linear-gradient(to right, rgb(15 43 70 / 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(15 43 70 / 0.05) 1px, transparent 1px);
+  background-size: 56px 56px;
+  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 8%, #000 92%, transparent);
+  mask-image: linear-gradient(to bottom, transparent, #000 8%, #000 92%, transparent);
+}
+.dark .chapters-grid::before {
+  background-image:
+    linear-gradient(to right, rgb(255 255 255 / 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(255 255 255 / 0.05) 1px, transparent 1px);
+}
+
 /* Flip button (src/components/flip-button.tsx): the front face (an icon)
    turns away on hover or keyboard focus to show the back face (a label). Only
    the inner layer rotates, so the focus ring on the link itself stays put.
