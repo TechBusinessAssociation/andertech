@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { signOut } from "@/auth";
+import { countPendingRequests } from "@/lib/access-requests";
 import { requireAdmin } from "@/lib/require-admin";
 import { AdminNav } from "./nav";
 
@@ -8,6 +9,7 @@ import { AdminNav } from "./nav";
 // every /admin page and every admin server action calls requireAdmin() itself.
 export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
   const email = await requireAdmin();
+  const pendingRequests = await countPendingRequests();
 
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-6 px-4 py-6 md:flex-row md:gap-10 md:px-6 md:py-10">
@@ -20,7 +22,7 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
             </p>
           </div>
 
-          <AdminNav />
+          <AdminNav pendingRequests={pendingRequests} />
 
           <div className="flex gap-4 text-sm md:flex-col md:gap-2">
             <Link

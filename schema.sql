@@ -76,3 +76,23 @@ on conflict do nothing;
 -- members home page. Set on /admin/resources. Safe to re-run.
 
 alter table resources add column if not exists featured boolean not null default false;
+
+-- --- Account requests ---
+-- Someone asks for an account on /request-access (name + @g.ucla.edu email);
+-- admins approve or reject on /admin/requests. Approving adds the email to
+-- members with the club-member role. One row per email; a rejected (or
+-- approved-then-removed) person can ask again, which resets it to pending.
+-- Holds names and emails of prospective members: database only, never in
+-- the repo. Safe to re-run.
+
+create table if not exists access_requests (
+  id bigserial primary key,
+  email text not null unique,
+  name text not null,
+  status text not null default 'pending' check (status in ('pending', 'approved', 'rejected')),
+  created_at timestamptz not null default now(),
+  decided_at timestamptz,
+  decided_by text
+);
+
+create index if not exists access_requests_status_idx on access_requests (status);

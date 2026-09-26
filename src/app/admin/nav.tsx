@@ -8,11 +8,11 @@ import { usePathname } from "next/navigation";
 const linkBase =
   "whitespace-nowrap rounded-lg px-3 py-2 text-sm hover:bg-zinc-100 dark:hover:bg-zinc-800";
 
-const items: (
-  | { href: string; label: string }
-  | { group: string; items: { href: string; label: string }[] }
-)[] = [
+type Item = { href: string; label: string; badge?: "requests" };
+
+const items: (Item | { group: string; items: Item[] })[] = [
   { href: "/admin/members", label: "Members" },
+  { href: "/admin/requests", label: "Requests", badge: "requests" },
   {
     group: "Resources",
     items: [
@@ -23,19 +23,17 @@ const items: (
   { href: "/admin/events", label: "Events" },
 ];
 
-export function AdminNav() {
+export function AdminNav({ pendingRequests }: { pendingRequests: number }) {
   const pathname = usePathname();
 
   function NavLink({
     href,
     label,
+    badge,
     indent,
-  }: {
-    href: string;
-    label: string;
-    indent?: boolean;
-  }) {
+  }: Item & { indent?: boolean }) {
     const active = pathname === href || pathname.startsWith(`${href}/`);
+    const count = badge === "requests" ? pendingRequests : 0;
     return (
       <Link
         href={href}
@@ -47,6 +45,14 @@ export function AdminNav() {
         }`}
       >
         {label}
+        {count > 0 && (
+          <span
+            aria-label={`${count} pending`}
+            className="ml-2 inline-flex min-w-5 items-center justify-center rounded-full bg-brand-gold px-1.5 text-xs font-semibold text-brand-navy"
+          >
+            {count}
+          </span>
+        )}
       </Link>
     );
   }

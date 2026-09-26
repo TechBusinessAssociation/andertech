@@ -1,7 +1,12 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth, signIn, signOut } from "@/auth";
-import { HeroBand } from "@/components/hero-band";
+import {
+  AuthShell,
+  authButtonNeutral,
+  authButtonPrimary,
+  eyebrowClass,
+} from "@/components/auth-shell";
 import { IconTile } from "@/components/icons";
 import { isAdmin } from "@/lib/admin";
 import { isApprovedMember } from "@/lib/members-db";
@@ -35,9 +40,6 @@ function GoogleG() {
   );
 }
 
-const cardButton =
-  "inline-flex min-h-12 w-full items-center justify-center gap-3 rounded-xl border px-5 text-[15px] font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-blue";
-
 // Branded sign-in page (the site header above it still renders via the root
 // layout). It also doubles as the Auth.js error page: a denied sign-in
 // redirects back here with ?error=AccessDenied.
@@ -61,106 +63,95 @@ export default async function SignInPage({ searchParams }: SignInPageProps) {
     : null;
 
   return (
-    <main className="flex flex-1 flex-col">
-      <HeroBand labelledBy="signin-heading" className="flex flex-1 items-center">
-        <div className="mx-auto w-full max-w-5xl px-5 py-10 md:py-16">
-          <div className="mx-auto grid w-full max-w-md gap-5 rounded-2xl border border-white/70 bg-white/85 p-6 text-brand-navy shadow-sm backdrop-blur-sm md:p-8 dark:border-white/10 dark:bg-zinc-900/85 dark:text-zinc-100">
-            <IconTile name="people" />
+    <AuthShell labelledBy="signin-heading">
+      <IconTile name="people" />
 
-            <div className="grid gap-2">
-              <span className="inline-flex items-center text-xs font-semibold uppercase tracking-[0.12em] text-brand-navy/70 dark:text-white/70">
-                Members
-              </span>
-              <h1
-                id="signin-heading"
-                className="text-3xl font-semibold leading-tight tracking-tight text-balance"
-              >
-                {email ? "You're signed in" : "Sign in to AnderTech"}
-              </h1>
-              <p className="text-[15px] text-brand-navy/75 dark:text-white/75">
-                {email
-                  ? `Signed in as ${email}, which isn't on the member list.`
-                  : "Use the Google account you're an AnderTech member under."}
-              </p>
-            </div>
+      <div className="grid gap-2">
+        <span className={eyebrowClass}>Members</span>
+        <h1
+          id="signin-heading"
+          className="text-3xl font-semibold leading-tight tracking-tight text-balance"
+        >
+          {email ? "You're signed in" : "Sign in to AnderTech"}
+        </h1>
+        <p className="text-[15px] text-brand-navy/75 dark:text-white/75">
+          {email
+            ? `Signed in as ${email}, which isn't on the member list.`
+            : "Use the Google account you're an AnderTech member under."}
+        </p>
+      </div>
 
-            {error === "AccessDenied" && (
-              <p
-                role="alert"
-                className="rounded-xl border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-800 dark:border-red-800 dark:bg-red-950 dark:text-red-200"
-              >
-                That Google account isn&apos;t on the approved member list.{" "}
-                {contactHref ? (
-                  <>
-                    If you think this is a mistake,{" "}
-                    <a href={contactHref} className="font-medium underline">
-                      contact the board
-                    </a>
-                    .
-                  </>
-                ) : (
-                  "If you think this is a mistake, contact the board."
-                )}
-              </p>
-            )}
+      {error === "AccessDenied" && (
+        <p
+          role="alert"
+          className="rounded-xl border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-800 dark:border-red-800 dark:bg-red-950 dark:text-red-200"
+        >
+          That Google account isn&apos;t on the approved member list.{" "}
+          <Link href="/request-access" className="font-medium underline">
+            Request access
+          </Link>
+          {contactHref ? (
+            <>
+              , or if you think this is a mistake,{" "}
+              <a href={contactHref} className="font-medium underline">
+                contact the board
+              </a>
+              .
+            </>
+          ) : (
+            ", or if you think this is a mistake, contact the board."
+          )}
+        </p>
+      )}
 
-            {email ? (
-              <div className="grid gap-3">
-                {admin && (
-                  <Link
-                    href="/admin"
-                    className={`${cardButton} border-transparent bg-brand-navy text-white hover:bg-brand-blue dark:bg-brand-gold dark:text-brand-navy dark:hover:brightness-105`}
-                  >
-                    Open the admin console
-                  </Link>
-                )}
-                <form
-                  action={async () => {
-                    "use server";
-                    await signOut({ redirectTo: "/sign-in" });
-                  }}
-                >
-                  <button
-                    type="submit"
-                    className={`${cardButton} border-zinc-300 bg-white text-zinc-800 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800`}
-                  >
-                    Sign out and use another account
-                  </button>
-                </form>
-              </div>
-            ) : (
-              <form
-                action={async () => {
-                  "use server";
-                  await signIn("google", { redirectTo: "/members" });
-                }}
-              >
-                <button
-                  type="submit"
-                  className={`${cardButton} border-zinc-300 bg-white text-zinc-800 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800`}
-                >
-                  <GoogleG />
-                  Sign in with Google
-                </button>
-              </form>
-            )}
-
-            <p className="text-[13px] text-brand-navy/65 dark:text-white/65">
-              Members get upcoming events, guides and recruiting resources in
-              one place.
-            </p>
-          </div>
-
-          <p className="mt-5 text-center">
-            <Link
-              href="/"
-              className="inline-flex min-h-11 items-center text-sm font-medium text-brand-blue hover:underline dark:text-[#7dbbec]"
-            >
-              &larr; Back to home
+      {email ? (
+        <div className="grid gap-3">
+          {admin && (
+            <Link href="/admin" className={authButtonPrimary}>
+              Open the admin console
             </Link>
-          </p>
+          )}
+          <form
+            action={async () => {
+              "use server";
+              await signOut({ redirectTo: "/sign-in" });
+            }}
+          >
+            <button type="submit" className={authButtonNeutral}>
+              Sign out and use another account
+            </button>
+          </form>
         </div>
-      </HeroBand>
-    </main>
+      ) : (
+        <form
+          action={async () => {
+            "use server";
+            await signIn("google", { redirectTo: "/members" });
+          }}
+        >
+          <button type="submit" className={authButtonNeutral}>
+            <GoogleG />
+            Sign in with Google
+          </button>
+        </form>
+      )}
+
+      {!email && (
+        <p className="text-sm text-brand-navy/75 dark:text-white/75">
+          Not a member yet?{" "}
+          <Link
+            href="/request-access"
+            className="font-semibold text-brand-blue underline dark:text-[#7dbbec]"
+          >
+            Request access
+          </Link>
+        </p>
+      )}
+
+      <p className="text-[13px] text-brand-navy/65 dark:text-white/65">
+        Members get upcoming events, guides and recruiting resources in one
+        place.
+      </p>
+    </AuthShell>
   );
 }
