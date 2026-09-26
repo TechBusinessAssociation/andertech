@@ -56,6 +56,17 @@ function eventInputFrom(formData: FormData): EventInput {
   };
 }
 
+// Every action that changes what members see also revalidates /members
+// (and /members/events), so edits show up without waiting on a cache.
+// Must stay at module level: the inline "use server" actions below capture
+// anything declared inside AdminPage as a bound argument, and a plain
+// function can't be serialized that way (it 500s after the action runs).
+function refresh() {
+  revalidatePath("/admin");
+  revalidatePath("/members");
+  revalidatePath("/members/events");
+}
+
 function orderNumber(value: FormDataEntryValue | null): number {
   const n = Number(value);
   return Number.isFinite(n) ? Math.trunc(n) : 0;
@@ -88,7 +99,8 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
       getEventCategories(),
     ]);
   const editing = Number.isFinite(editEventId)
-    ? events.find((event) => event.id === editEventId)
+    ? // Postgres returns bigserial ids as strings, hence Number().
+      events.find((event) => Number(event.id) === editEventId)
     : undefined;
 
   async function addMembersAction(formData: FormData) {
@@ -107,14 +119,6 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
     const target = String(formData.get("email") ?? "");
     await removeMember(target);
     revalidatePath("/admin");
-  }
-
-  // Every action that changes what members see also revalidates /members
-  // (and /members/events), so edits show up without waiting on a cache.
-  function refresh() {
-    revalidatePath("/admin");
-    revalidatePath("/members");
-    revalidatePath("/members/events");
   }
 
   async function addCategoryAction(formData: FormData) {
