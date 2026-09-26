@@ -1,11 +1,10 @@
 // Board members. Add one entry per person, newest board each year.
 // Only add a name, bio or photo with that person's consent.
 //
-// The home page shows the board group photo (`boardPhoto` below), then the
-// leadership up front: any role starting with "President" or "EVP" is shown as
-// leadership, and every other role (the vice presidents) goes in the
-// collapsed "Vice presidents" list. Keep that wording in roles and the split
-// works on its own; the order here is the order shown.
+// The home page shows the board group photo (`boardPhoto` below), then
+// everyone in one collapsed list. Everybody is shown the same way, with no
+// highlighted roles or tiers, so nobody is set apart; the order here is the
+// order shown.
 //
 // This list (name + role only, no bios or photos) was sourced from
 // AnderTech's official Anderson club page as a starting point:
