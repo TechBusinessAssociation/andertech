@@ -68,7 +68,7 @@ export default async function SignInPage({ searchParams }: SignInPageProps) {
             <IconTile name="people" />
 
             <div className="grid gap-2">
-              <span className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-brand-navy/70 before:h-0.5 before:w-[22px] before:bg-brand-gold before:content-[''] dark:text-white/70">
+              <span className="inline-flex items-center text-xs font-semibold uppercase tracking-[0.12em] text-brand-navy/70 dark:text-white/70">
                 Members
               </span>
               <h1
