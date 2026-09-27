@@ -108,4 +108,58 @@ create index if not exists access_requests_status_idx on access_requests (status
 alter table members
   add column if not exists display_name text,
   add column if not exists grad_year smallint,
-  add column if not exists program text;
+  add column if not exists program text,
+  add column if not exists linkedin_url text;
+
+-- --- Members-only tabs on /members (Recruiting / What's new / Directory / Showcase) ---
+-- Recruiting/What's new/Showcase content is edited on /admin/recruiting,
+-- /admin/announcements and /admin/showcase respectively. The Member
+-- Directory tab needs no table of its own -- it lists every row already in
+-- `members`, using the profile fields above.
+
+-- One settings row (id is always 1) holding the Recruiting tab's links: the
+-- embedded Looker Studio dashboard, the reporting survey, a single
+-- invite/offer survey link, and four named "toolkit" links. All nullable --
+-- the tab hides whatever isn't filled in. A settings row, not a table of
+-- resources, because these are a handful of fixed, named slots (not an
+-- open-ended list like the general resources table), so a simple form is
+-- the easiest thing for the board to fill in and keep in sync. Safe to
+-- re-run: the insert only ever adds the one row, once.
+create table if not exists recruiting_page (
+  id int primary key default 1,
+  dashboard_url text,
+  reporting_url text,
+  invite_offer_url text,
+  resume_bot_url text,
+  cover_letter_url text,
+  question_bank_url text,
+  playbooks_url text,
+  check (id = 1)
+);
+
+insert into recruiting_page (id) values (1) on conflict (id) do nothing;
+
+-- What's new: a short manual announcement feed (not auto-generated from
+-- other tables), newest first.
+create table if not exists announcements (
+  id bigserial primary key,
+  title text not null,
+  body text,
+  url text,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists announcements_created_at_idx on announcements (created_at desc);
+
+-- AnderTech Showcase: member projects/achievements the board posts.
+-- member_name is optional -- a post doesn't have to name anyone.
+create table if not exists showcase_posts (
+  id bigserial primary key,
+  title text not null,
+  description text,
+  member_name text,
+  url text,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists showcase_posts_created_at_idx on showcase_posts (created_at desc);

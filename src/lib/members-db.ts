@@ -33,6 +33,7 @@ export type MemberProfile = {
   displayName: string | null;
   gradYear: number | null;
   program: string | null;
+  linkedinUrl: string | null;
 };
 
 // Self-service profile fields (see schema.sql's comment on the members
@@ -43,7 +44,7 @@ export async function getMemberProfile(
   const normalized = email.trim().toLowerCase();
   try {
     const { rows } = await sql`
-      select display_name, grad_year, program
+      select display_name, grad_year, program, linkedin_url
       from members where email = ${normalized} limit 1
     `;
     const row = rows[0];
@@ -51,9 +52,10 @@ export async function getMemberProfile(
       displayName: (row?.display_name as string | null) ?? null,
       gradYear: (row?.grad_year as number | null) ?? null,
       program: (row?.program as string | null) ?? null,
+      linkedinUrl: (row?.linkedin_url as string | null) ?? null,
     };
   } catch {
-    return { displayName: null, gradYear: null, program: null };
+    return { displayName: null, gradYear: null, program: null, linkedinUrl: null };
   }
 }
 
@@ -66,9 +68,42 @@ export async function updateMemberProfile(
     update members
     set display_name = ${profile.displayName},
         grad_year = ${profile.gradYear},
-        program = ${profile.program}
+        program = ${profile.program},
+        linkedin_url = ${profile.linkedinUrl}
     where email = ${normalized}
   `;
+}
+
+// Every approved member, for the Member Directory tab on /members. A name
+// only shows if that member has set one on their own profile -- there is no
+// other source for it (we can only ever read the signed-in visitor's own
+// Google name, never anyone else's), so this fills in gradually as members
+// visit /members/profile, not all at once.
+export type DirectoryMember = {
+  email: string;
+  displayName: string | null;
+  gradYear: number | null;
+  program: string | null;
+  linkedinUrl: string | null;
+};
+
+export async function getDirectoryMembers(): Promise<DirectoryMember[]> {
+  try {
+    const { rows } = await sql`
+      select email, display_name, grad_year, program, linkedin_url
+      from members
+      order by coalesce(display_name, email) asc
+    `;
+    return rows.map((row) => ({
+      email: row.email as string,
+      displayName: (row.display_name as string | null) ?? null,
+      gradYear: (row.grad_year as number | null) ?? null,
+      program: (row.program as string | null) ?? null,
+      linkedinUrl: (row.linkedin_url as string | null) ?? null,
+    }));
+  } catch {
+    return [];
+  }
 }
 
 export type MemberResource = {
@@ -555,4 +590,215 @@ export async function updateEvent(
 
 export async function removeEvent(id: number): Promise<void> {
   await sql`delete from events where id = ${id}`;
+}
+
+// --- Recruiting tab settings (a single row, id = 1 -- see schema.sql) ---
+
+export type RecruitingPage = {
+  dashboardUrl: string | null;
+  reportingUrl: string | null;
+  inviteOfferUrl: string | null;
+  resumeBotUrl: string | null;
+  coverLetterUrl: string | null;
+  questionBankUrl: string | null;
+  playbooksUrl: string | null;
+};
+
+const EMPTY_RECRUITING_PAGE: RecruitingPage = {
+  dashboardUrl: null,
+  reportingUrl: null,
+  inviteOfferUrl: null,
+  resumeBotUrl: null,
+  coverLetterUrl: null,
+  questionBankUrl: null,
+  playbooksUrl: null,
+};
+
+export async function getRecruitingPage(): Promise<RecruitingPage> {
+  try {
+    const { rows } = await sql`
+      select dashboard_url, reporting_url, invite_offer_url, resume_bot_url,
+             cover_letter_url, question_bank_url, playbooks_url
+      from recruiting_page where id = 1
+    `;
+    const row = rows[0];
+    if (!row) return EMPTY_RECRUITING_PAGE;
+    return {
+      dashboardUrl: row.dashboard_url as string | null,
+      reportingUrl: row.reporting_url as string | null,
+      inviteOfferUrl: row.invite_offer_url as string | null,
+      resumeBotUrl: row.resume_bot_url as string | null,
+      coverLetterUrl: row.cover_letter_url as string | null,
+      questionBankUrl: row.question_bank_url as string | null,
+      playbooksUrl: row.playbooks_url as string | null,
+    };
+  } catch {
+    return EMPTY_RECRUITING_PAGE;
+  }
+}
+
+export async function updateRecruitingPage(
+  page: RecruitingPage,
+): Promise<void> {
+  const u = (value: string | null) => (value ? cleanUrl(value) : null);
+  await sql`
+    insert into recruiting_page
+      (id, dashboard_url, reporting_url, invite_offer_url, resume_bot_url,
+       cover_letter_url, question_bank_url, playbooks_url)
+    values
+      (1, ${u(page.dashboardUrl)}, ${u(page.reportingUrl)}, ${u(page.inviteOfferUrl)},
+       ${u(page.resumeBotUrl)}, ${u(page.coverLetterUrl)}, ${u(page.questionBankUrl)},
+       ${u(page.playbooksUrl)})
+    on conflict (id) do update set
+      dashboard_url = excluded.dashboard_url,
+      reporting_url = excluded.reporting_url,
+      invite_offer_url = excluded.invite_offer_url,
+      resume_bot_url = excluded.resume_bot_url,
+      cover_letter_url = excluded.cover_letter_url,
+      question_bank_url = excluded.question_bank_url,
+      playbooks_url = excluded.playbooks_url
+  `;
+}
+
+// --- What's new: a short manual announcement feed ---
+
+export type Announcement = {
+  id: number;
+  title: string;
+  body: string | null;
+  url: string | null;
+  created_at: string;
+};
+
+export async function getAnnouncements(limit = 20): Promise<Announcement[]> {
+  try {
+    const { rows } = await sql`
+      select id, title, body, url, to_char(created_at, 'YYYY-MM-DD') as created_at
+      from announcements
+      order by created_at desc
+      limit ${limit}
+    `;
+    return rows as Announcement[];
+  } catch {
+    return [];
+  }
+}
+
+export type AnnouncementInput = { title: string; body: string; url: string };
+
+function validAnnouncement(input: AnnouncementInput) {
+  const title = input.title.trim();
+  if (!title) return null;
+  const rawUrl = input.url.trim();
+  const url = rawUrl ? cleanUrl(rawUrl) : null;
+  if (rawUrl && !url) return null;
+  return { title, body: emptyToNull(input.body), url };
+}
+
+export async function addAnnouncement(
+  input: AnnouncementInput,
+): Promise<boolean> {
+  const a = validAnnouncement(input);
+  if (!a) return false;
+  await sql`
+    insert into announcements (title, body, url)
+    values (${a.title}, ${a.body}, ${a.url})
+  `;
+  return true;
+}
+
+export async function updateAnnouncement(
+  id: number,
+  input: AnnouncementInput,
+): Promise<boolean> {
+  const a = validAnnouncement(input);
+  if (!a) return false;
+  await sql`
+    update announcements
+    set title = ${a.title}, body = ${a.body}, url = ${a.url}
+    where id = ${id}
+  `;
+  return true;
+}
+
+export async function removeAnnouncement(id: number): Promise<void> {
+  await sql`delete from announcements where id = ${id}`;
+}
+
+// --- AnderTech Showcase: member projects/achievements the board posts ---
+
+export type ShowcasePost = {
+  id: number;
+  title: string;
+  description: string | null;
+  member_name: string | null;
+  url: string | null;
+  created_at: string;
+};
+
+export async function getShowcasePosts(limit = 20): Promise<ShowcasePost[]> {
+  try {
+    const { rows } = await sql`
+      select id, title, description, member_name, url,
+             to_char(created_at, 'YYYY-MM-DD') as created_at
+      from showcase_posts
+      order by created_at desc
+      limit ${limit}
+    `;
+    return rows as ShowcasePost[];
+  } catch {
+    return [];
+  }
+}
+
+export type ShowcasePostInput = {
+  title: string;
+  description: string;
+  memberName: string;
+  url: string;
+};
+
+function validShowcasePost(input: ShowcasePostInput) {
+  const title = input.title.trim();
+  if (!title) return null;
+  const rawUrl = input.url.trim();
+  const url = rawUrl ? cleanUrl(rawUrl) : null;
+  if (rawUrl && !url) return null;
+  return {
+    title,
+    description: emptyToNull(input.description),
+    memberName: emptyToNull(input.memberName),
+    url,
+  };
+}
+
+export async function addShowcasePost(
+  input: ShowcasePostInput,
+): Promise<boolean> {
+  const p = validShowcasePost(input);
+  if (!p) return false;
+  await sql`
+    insert into showcase_posts (title, description, member_name, url)
+    values (${p.title}, ${p.description}, ${p.memberName}, ${p.url})
+  `;
+  return true;
+}
+
+export async function updateShowcasePost(
+  id: number,
+  input: ShowcasePostInput,
+): Promise<boolean> {
+  const p = validShowcasePost(input);
+  if (!p) return false;
+  await sql`
+    update showcase_posts
+    set title = ${p.title}, description = ${p.description},
+        member_name = ${p.memberName}, url = ${p.url}
+    where id = ${id}
+  `;
+  return true;
+}
+
+export async function removeShowcasePost(id: number): Promise<void> {
+  await sql`delete from showcase_posts where id = ${id}`;
 }

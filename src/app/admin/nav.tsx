@@ -21,6 +21,14 @@ const items: (Item | { group: string; items: Item[] })[] = [
     ],
   },
   { href: "/admin/events", label: "Events" },
+  {
+    group: "Members tabs",
+    items: [
+      { href: "/admin/recruiting", label: "Recruiting tab" },
+      { href: "/admin/announcements", label: "What's new" },
+      { href: "/admin/showcase", label: "Showcase" },
+    ],
+  },
 ];
 
 export function AdminNav({ pendingRequests }: { pendingRequests: number }) {

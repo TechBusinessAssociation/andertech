@@ -67,8 +67,8 @@ export default async function ProfilePage({ searchParams }: Props) {
               className={inputClass}
             />
             <span className="text-xs font-normal text-zinc-500 dark:text-zinc-400">
-              Shown on the members home page. Leave blank to use your Google
-              account name.
+              Shown on the members home page and the Member Directory. Leave
+              blank to use your Google account name.
             </span>
           </label>
 
@@ -100,6 +100,20 @@ export default async function ProfilePage({ searchParams }: Props) {
                 </option>
               ))}
             </select>
+          </label>
+
+          <label className={labelClass}>
+            LinkedIn (optional)
+            <input
+              name="linkedinUrl"
+              type="url"
+              defaultValue={profile.linkedinUrl ?? ""}
+              placeholder="https://www.linkedin.com/in/..."
+              className={`${inputClass} font-normal`}
+            />
+            <span className="text-xs font-normal text-zinc-500 dark:text-zinc-400">
+              Shown on the Member Directory, next to your name.
+            </span>
           </label>
 
           <button

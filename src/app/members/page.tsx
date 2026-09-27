@@ -1,9 +1,13 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import {
+  getAnnouncements,
+  getDirectoryMembers,
   getFeaturedResources,
   getMemberProfile,
+  getRecruitingPage,
   getResourceGroups,
+  getShowcasePosts,
   getUpcomingEvents,
   isApprovedMember,
 } from "@/lib/members-db";
@@ -11,12 +15,29 @@ import { site } from "../../../content/site";
 import { Browse } from "./_components/browse";
 import { FooterCards } from "./_components/footer-cards";
 import { Hero } from "./_components/hero";
+import { isTabKey, MemberTabs, type TabKey } from "./_components/member-tabs";
 import { NextUp } from "./_components/next-up";
 import { StartHere } from "./_components/start-here";
 
 type Props = {
-  searchParams: Promise<{ q?: string; cat?: string }>;
+  searchParams: Promise<{ q?: string; cat?: string; tab?: string; dq?: string }>;
 };
+
+// Only the active tab's data is ever fetched -- the other three tabs' DB
+// queries never run on a given page load. See member-tabs.tsx.
+async function loadTab(tab: TabKey, dq: string) {
+  switch (tab) {
+    case "whats-new":
+      return { tab, announcements: await getAnnouncements() } as const;
+    case "directory":
+      return { tab, members: await getDirectoryMembers(), dq } as const;
+    case "showcase":
+      return { tab, posts: await getShowcasePosts() } as const;
+    case "recruiting":
+    default:
+      return { tab: "recruiting" as const, recruiting: await getRecruitingPage() };
+  }
+}
 
 // middleware.ts only confirms a signed-in Google session (Edge-safe,
 // cheap check) -- database access stays out of that bundle on purpose
@@ -52,6 +73,10 @@ export default async function MembersPage({ searchParams }: Props) {
     session?.user?.name?.trim().split(/\s+/)[0] ||
     null;
 
+  const tab: TabKey = isTabKey(params.tab) ? params.tab : "recruiting";
+  const dq = (params.dq ?? "").slice(0, 100);
+  const tabData = await loadTab(tab, dq);
+
   return (
     <main className="flex-1">
       <Hero firstName={firstName} next={events[0] ?? null} />
@@ -60,6 +85,7 @@ export default async function MembersPage({ searchParams }: Props) {
         <NextUp events={events} />
         <StartHere resources={featured} />
         <Browse groups={groups} q={q} cat={cat} />
+        <MemberTabs {...tabData} />
         <FooterCards
           contactEmail={site.contactEmail}
           subjectPrefix={site.feedbackSubject}
