@@ -29,7 +29,7 @@ export default async function RequestAccessPage({ searchParams }: Props) {
     return (
       <AuthShell labelledBy="request-heading">
         <div className="grid gap-2">
-          <span className={eyebrowClass}>Request access</span>
+          <span className={eyebrowClass}>Register</span>
           <h1
             id="request-heading"
             className="text-3xl font-semibold leading-tight tracking-tight text-balance"
@@ -53,7 +53,7 @@ export default async function RequestAccessPage({ searchParams }: Props) {
     <AuthShell labelledBy="request-heading">
 
       <div className="grid gap-2">
-        <span className={eyebrowClass}>Request access</span>
+        <span className={eyebrowClass}>Register</span>
         <h1
           id="request-heading"
           className="text-3xl font-semibold leading-tight tracking-tight text-balance"
@@ -121,12 +121,18 @@ export default async function RequestAccessPage({ searchParams }: Props) {
 
       <p className="text-sm text-brand-navy/75 dark:text-white/75">
         Already approved?{" "}
-        <Link
-          href="/sign-in"
+        {/* eslint-disable-next-line @next/next/no-html-link-for-pages --
+            this targets an API route, not a page, and needs a full
+            navigation (not client-side routing) to reach it. */}
+        <a
+          // Goes straight to Google's account chooser (Auth.js's built-in
+          // GET sign-in route), instead of back to /sign-in -- which would
+          // just show this same "register or sign in" choice again.
+          href="/api/auth/signin/google?callbackUrl=%2Fmembers"
           className="font-semibold text-brand-blue underline dark:text-[#7dbbec]"
         >
           Sign in
-        </Link>
+        </a>
       </p>
     </AuthShell>
   );

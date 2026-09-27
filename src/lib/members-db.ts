@@ -29,6 +29,48 @@ export async function isApprovedMember(
   }
 }
 
+export type MemberProfile = {
+  displayName: string | null;
+  gradYear: number | null;
+  program: string | null;
+};
+
+// Self-service profile fields (see schema.sql's comment on the members
+// table). Only the member themselves edits these, on /members/profile.
+export async function getMemberProfile(
+  email: string,
+): Promise<MemberProfile> {
+  const normalized = email.trim().toLowerCase();
+  try {
+    const { rows } = await sql`
+      select display_name, grad_year, program
+      from members where email = ${normalized} limit 1
+    `;
+    const row = rows[0];
+    return {
+      displayName: (row?.display_name as string | null) ?? null,
+      gradYear: (row?.grad_year as number | null) ?? null,
+      program: (row?.program as string | null) ?? null,
+    };
+  } catch {
+    return { displayName: null, gradYear: null, program: null };
+  }
+}
+
+export async function updateMemberProfile(
+  email: string,
+  profile: MemberProfile,
+): Promise<void> {
+  const normalized = email.trim().toLowerCase();
+  await sql`
+    update members
+    set display_name = ${profile.displayName},
+        grad_year = ${profile.gradYear},
+        program = ${profile.program}
+    where email = ${normalized}
+  `;
+}
+
 export type MemberResource = {
   id: number;
   label: string;
@@ -219,7 +261,13 @@ export async function removeMember(email: string): Promise<void> {
   await sql`delete from members where email = ${normalized}`;
 }
 
-export type MemberRow = { email: string; roles: string[] };
+export type MemberRow = {
+  email: string;
+  roles: string[];
+  display_name: string | null;
+  grad_year: number | null;
+  program: string | null;
+};
 
 export const MEMBERS_PAGE_SIZE = 10;
 
@@ -239,7 +287,7 @@ export async function listMembers(
   const current = Math.min(Math.max(1, Math.trunc(page) || 1), pages);
 
   const { rows } = await sql`
-    select m.email,
+    select m.email, m.display_name, m.grad_year, m.program,
            coalesce(
              array_agg(r.role order by r.role) filter (where r.role is not null),
              '{}'

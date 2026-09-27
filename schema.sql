@@ -96,3 +96,16 @@ create table if not exists access_requests (
 );
 
 create index if not exists access_requests_status_idx on access_requests (status);
+
+-- --- Member profile (self-edited on /members/profile) ---
+-- Display name overrides the greeting on /members (falls back to the
+-- member's Google account name when null). Program is one of the fixed
+-- options in src/lib/programs.ts (Full-Time MBA / FEMBA / EMBA), enforced in
+-- the UI, not a DB constraint, so a new track doesn't need a migration.
+-- Read-only on /admin/members; edited only by the member themselves.
+-- Safe to re-run.
+
+alter table members
+  add column if not exists display_name text,
+  add column if not exists grad_year smallint,
+  add column if not exists program text;

@@ -158,6 +158,9 @@ export default async function AdminMembersPage({ searchParams }: Props) {
                   Roles
                 </th>
                 <th scope="col" className={thClass}>
+                  Profile
+                </th>
+                <th scope="col" className={thClass}>
                   <span className="sr-only">Actions</span>
                 </th>
               </tr>
@@ -165,7 +168,7 @@ export default async function AdminMembersPage({ searchParams }: Props) {
             <tbody>
               {list.rows.length === 0 ? (
                 <tr className={trClass}>
-                  <td colSpan={3} className={`${tdClass} text-zinc-600`}>
+                  <td colSpan={4} className={`${tdClass} text-zinc-600`}>
                     {query
                       ? `No members match "${query}".`
                       : "No members yet. Add some above."}
@@ -192,6 +195,26 @@ export default async function AdminMembersPage({ searchParams }: Props) {
                           <Badge tone="brand">Permanent admin</Badge>
                         )}
                       </div>
+                    </td>
+                    <td className={`${tdClass} text-zinc-600 dark:text-zinc-400`}>
+                      {/* Self-edited on /members/profile -- read-only here.
+                          "—" (an em dash) when a member hasn't set it. */}
+                      {member.display_name || member.grad_year || member.program ? (
+                        <div className="flex flex-col gap-0.5">
+                          {member.display_name && (
+                            <span className="text-zinc-900 dark:text-zinc-100">
+                              {member.display_name}
+                            </span>
+                          )}
+                          <span>
+                            {[member.program, member.grad_year]
+                              .filter(Boolean)
+                              .join(" · ") || "—"}
+                          </span>
+                        </div>
+                      ) : (
+                        "—"
+                      )}
                     </td>
                     <td className={tdClass}>
                       <div className="flex flex-col items-start gap-2">
