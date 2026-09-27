@@ -133,7 +133,7 @@ export function HeaderActions() {
               href="/members/profile"
               className="block px-3.5 py-2 text-sm text-zinc-800 hover:bg-zinc-100"
             >
-              Edit profile
+              User profile
             </Link>
             <form
               action={signOutAction}
