@@ -1,22 +1,13 @@
-import { FlipButton } from "@/components/flip-button";
 import { HeroBand } from "@/components/hero-band";
 import { IconTile } from "@/components/icons";
-import { links } from "../../content/links";
 import { site } from "../../content/site";
 
-const socialLinks = [
-  { label: "Instagram", icon: "instagram", href: links.instagram },
-  { label: "Facebook", icon: "facebook", href: links.facebook },
-  { label: "LinkedIn", icon: "linkedin", href: links.linkedin },
-] as const;
-
-// Landing page hero: club name, tagline, contact and social links, and the
-// three things the club does. There is deliberately no "Join" button for now
-// (links.joinSurvey stays in content/links.ts, unused, for when it returns).
-// All text comes from /content so the board can edit it without touching code.
+// Landing page hero: club name, tagline, and the three things the club does.
+// Contact/social links live in the footer now (src/components/site-footer.tsx).
+// There is deliberately no "Join" button for now (links.joinSurvey stays in
+// content/links.ts, unused, for when it returns). All text comes from
+// /content so the board can edit it without touching code.
 export function LandingHero() {
-  const activeSocials = socialLinks.filter((link) => link.href);
-
   return (
     <HeroBand labelledBy="home-heading">
       <div className="mx-auto grid max-w-5xl items-center gap-8 px-5 py-10 md:grid-cols-[1.35fr_1fr] md:gap-12 md:py-14">
@@ -41,27 +32,6 @@ export function LandingHero() {
             </p>
           )}
 
-          {(site.contactEmail || activeSocials.length > 0) && (
-            <div className="mt-6 flex flex-wrap items-center gap-2.5">
-              {site.contactEmail && (
-                <FlipButton
-                  href={`mailto:${site.contactEmail}`}
-                  icon="mail"
-                  label="Contact us"
-                  variant="primary"
-                />
-              )}
-              {activeSocials.map((link) => (
-                <FlipButton
-                  key={link.label}
-                  href={link.href!}
-                  icon={link.icon}
-                  label={link.label}
-                  external
-                />
-              ))}
-            </div>
-          )}
         </div>
 
         {site.pillars.length > 0 && (
