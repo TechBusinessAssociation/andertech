@@ -5,7 +5,6 @@ import {
   AuthShell,
   authButtonNeutral,
   authButtonPrimary,
-  eyebrowClass,
 } from "@/components/auth-shell";
 import { isAdmin } from "@/lib/admin";
 import { isApprovedMember } from "@/lib/members-db";
@@ -65,18 +64,17 @@ export default async function SignInPage({ searchParams }: SignInPageProps) {
     <AuthShell labelledBy="signin-heading">
 
       <div className="grid gap-2">
-        <span className={eyebrowClass}>Members</span>
         <h1
           id="signin-heading"
           className="text-3xl font-semibold leading-tight tracking-tight text-balance"
         >
           {email ? "You're signed in" : "Sign in to AnderTech"}
         </h1>
-        <p className="text-[15px] text-brand-navy/75 dark:text-white/75">
-          {email
-            ? `Signed in as ${email}, which isn't on the member list.`
-            : "Request access the first time. Once approved, sign in with Google."}
-        </p>
+        {email && (
+          <p className="text-[15px] text-brand-navy/75 dark:text-white/75">
+            {`Signed in as ${email}, which isn't on the member list.`}
+          </p>
+        )}
       </div>
 
       {error === "AccessDenied" && (
@@ -107,13 +105,13 @@ export default async function SignInPage({ searchParams }: SignInPageProps) {
 
       {!email && (
         <div className="grid gap-2">
+          <p className="text-sm font-semibold">Signing up for the first time?</p>
+          <p className="text-sm text-brand-navy/75 dark:text-white/75">
+            Set up your account with your @{site.requestEmailDomain} address.
+          </p>
           <Link href="/request-access" className={authButtonPrimary}>
             Request access
           </Link>
-          <p className="text-sm text-brand-navy/75 dark:text-white/75">
-            Joining the club doesn&apos;t give you a login. The board
-            approves your @{site.requestEmailDomain} address first.
-          </p>
         </div>
       )}
 
@@ -143,7 +141,9 @@ export default async function SignInPage({ searchParams }: SignInPageProps) {
             await signIn("google", { redirectTo: "/members" });
           }}
         >
-          <p className="text-sm font-semibold">Already approved?</p>
+          <p className="text-sm text-brand-navy/75 dark:text-white/75">
+            Already requested access? Sign in straightaway.
+          </p>
           <button type="submit" className={authButtonNeutral}>
             <GoogleG />
             {error === "AccessDenied"
@@ -152,11 +152,6 @@ export default async function SignInPage({ searchParams }: SignInPageProps) {
           </button>
         </form>
       )}
-
-      <p className="text-[13px] text-brand-navy/65 dark:text-white/65">
-        Approved members get upcoming events, guides and recruiting resources in one
-        place.
-      </p>
     </AuthShell>
   );
 }
