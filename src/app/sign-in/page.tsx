@@ -68,7 +68,7 @@ export default async function SignInPage({ searchParams }: SignInPageProps) {
           id="signin-heading"
           className="text-3xl font-semibold leading-tight tracking-tight text-balance"
         >
-          {email ? "You're signed in" : "Sign in to AnderTech"}
+          {email ? "You're signed in" : "Sign in"}
         </h1>
         {email && (
           <p className="text-[15px] text-brand-navy/75 dark:text-white/75">
@@ -105,12 +105,12 @@ export default async function SignInPage({ searchParams }: SignInPageProps) {
 
       {!email && (
         <div className="grid gap-2">
-          <p className="text-sm font-semibold">Signing up for the first time?</p>
           <p className="text-sm text-brand-navy/75 dark:text-white/75">
-            Set up your account with your @{site.requestEmailDomain} address.
+            First-time visitors to this website need to register and request
+            access with their @{site.requestEmailDomain} address.
           </p>
           <Link href="/request-access" className={authButtonPrimary}>
-            Request access
+            Register
           </Link>
         </div>
       )}
@@ -142,7 +142,7 @@ export default async function SignInPage({ searchParams }: SignInPageProps) {
           }}
         >
           <p className="text-sm text-brand-navy/75 dark:text-white/75">
-            Already requested access? Sign in straightaway.
+            Sign in for returning users.
           </p>
           <button type="submit" className={authButtonNeutral}>
             <GoogleG />
