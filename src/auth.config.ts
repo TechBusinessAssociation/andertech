@@ -26,7 +26,11 @@ export const authConfig: NextAuthConfig = {
       authorization: { params: { prompt: "select_account" } },
     }),
   ],
-  session: { strategy: "jwt" },
+  // 12 hours, refreshed on activity -- Auth.js's default is 30 days, which
+  // is too long for a site with recruiting resources behind it. An idle
+  // member is signed out 12h after their last visit; an active one is
+  // never bounced mid-session.
+  session: { strategy: "jwt", maxAge: 60 * 60 * 12 },
   pages: { error: "/sign-in" },
   // Trust the incoming Host header -- needed behind any reverse proxy
   // (Vercel included). Verified locally: without this, `next start`

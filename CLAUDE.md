@@ -34,7 +34,7 @@ The club board changes every year and the maintainers are MBA students, not full
 
 Login gates only `/members` and `/admin`. The public landing page, board, events, and join button are untouched.
 
-- **Sign-in:** Google (Auth.js / `next-auth` v5). JWT sessions.
+- **Sign-in:** Google (Auth.js / `next-auth` v5). JWT sessions, 12h `maxAge` (`src/auth.config.ts`) -- Auth.js's default is 30 days, which is too long for a site with recruiting resources behind it. An idle member is signed out 12h after their last visit; an active one is refreshed and never bounced mid-session.
 - **Who can sign in:** an email allow-list in **Vercel Postgres** (`members` table -- see `schema.sql` for the one-time table setup). Read/written via `@vercel/postgres` in `src/lib/members-db.ts`.
   - A database was chosen over the earlier Excel/Microsoft Graph plan because that needed a Microsoft 365 tenant admin to grant admin consent, which wasn't available. Postgres provisions directly in the Vercel dashboard (Storage tab) the project is already connected to -- no separate admin approval.
 - **To add or remove a member, resource link, resource category or members-only event: use `/admin`.** It has a left menu: `/admin/members`, `/admin/categories`, `/admin/resources`, `/admin/events`. Never edit the database with raw SQL as the normal workflow; `/admin` is the intended interface. `schema.sql` is only for one-time setup and migrations.
