@@ -103,7 +103,10 @@ export const chapters: Chapter[] = [
         blurb: "Joint events with other Anderson groups, including the Entrepreneur Association, women in tech and the identity clubs.",
       },
     ],
-    photo: null,
+    photo: {
+      src: "/photos/networking.webp",
+      alt: "A large group of AnderTech members and guests posing together at an evening mixer under string lights",
+    },
   },
   {
     id: "career-development",
