@@ -38,8 +38,8 @@ export default async function RequestAccessPage({ searchParams }: Props) {
           </h1>
           <p className="text-[15px] text-brand-navy/75 dark:text-white/75">
             Thanks. The board reviews requests, and once yours is approved you
-            can sign in with that @{domain} Google account. If you are already
-            a member, you can sign in now.
+            can sign in with that @{domain} Google account. Nobody is emailed,
+            so check back after the board&apos;s next review.
           </p>
         </div>
         <Link href="/sign-in" className={authButtonPrimary}>
@@ -58,12 +58,12 @@ export default async function RequestAccessPage({ searchParams }: Props) {
           id="request-heading"
           className="text-3xl font-semibold leading-tight tracking-tight text-balance"
         >
-          Request an AnderTech account
+          Request website access
         </h1>
         <p className="text-[15px] text-brand-navy/75 dark:text-white/75">
-          Enter your UCLA Google address (it ends in @{domain}). The board
-          reviews each request, and once you are approved you sign in with that
-          account.
+          This is separate from joining the club. Enter your UCLA Google
+          address (it ends in @{domain}). The board reviews each request, and
+          once you are approved you sign in with that account.
         </p>
       </div>
 
@@ -120,7 +120,7 @@ export default async function RequestAccessPage({ searchParams }: Props) {
       </form>
 
       <p className="text-sm text-brand-navy/75 dark:text-white/75">
-        Already a member?{" "}
+        Already approved?{" "}
         <Link
           href="/sign-in"
           className="font-semibold text-brand-blue underline dark:text-[#7dbbec]"

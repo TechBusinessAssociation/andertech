@@ -75,7 +75,7 @@ export default async function SignInPage({ searchParams }: SignInPageProps) {
         <p className="text-[15px] text-brand-navy/75 dark:text-white/75">
           {email
             ? `Signed in as ${email}, which isn't on the member list.`
-            : "Use the Google account you're an AnderTech member under."}
+            : "Request access the first time. Once approved, sign in with Google."}
         </p>
       </div>
 
@@ -84,11 +84,13 @@ export default async function SignInPage({ searchParams }: SignInPageProps) {
           role="alert"
           className="rounded-xl border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-800 dark:border-red-800 dark:bg-red-950 dark:text-red-200"
         >
-          That Google account isn&apos;t on the approved member list. Try a
-          different account below,{" "}
+          That Google account hasn&apos;t been approved for the website yet. If
+          you&apos;re new here,{" "}
           <Link href="/request-access" className="font-medium underline">
             request access
-          </Link>
+          </Link>{" "}
+          and the board will approve it. Otherwise try a different account
+          below
           {contactHref ? (
             <>
               , or if you think this is a mistake,{" "}
@@ -101,6 +103,18 @@ export default async function SignInPage({ searchParams }: SignInPageProps) {
             ", or if you think this is a mistake, contact the board."
           )}
         </p>
+      )}
+
+      {!email && (
+        <div className="grid gap-2">
+          <Link href="/request-access" className={authButtonPrimary}>
+            Request access
+          </Link>
+          <p className="text-sm text-brand-navy/75 dark:text-white/75">
+            Joining the club doesn&apos;t give you a login. The board
+            approves your @{site.requestEmailDomain} address first.
+          </p>
+        </div>
       )}
 
       {email ? (
@@ -123,11 +137,13 @@ export default async function SignInPage({ searchParams }: SignInPageProps) {
         </div>
       ) : (
         <form
+          className="grid gap-2 border-t border-brand-navy/10 pt-5 dark:border-white/15"
           action={async () => {
             "use server";
             await signIn("google", { redirectTo: "/members" });
           }}
         >
+          <p className="text-sm font-semibold">Already approved?</p>
           <button type="submit" className={authButtonNeutral}>
             <GoogleG />
             {error === "AccessDenied"
@@ -137,21 +153,8 @@ export default async function SignInPage({ searchParams }: SignInPageProps) {
         </form>
       )}
 
-      {!email && (
-        <p className="text-sm text-brand-navy/75 dark:text-white/75">
-          First time on this website? You might need to{" "}
-          <Link
-            href="/request-access"
-            className="font-semibold text-brand-blue underline dark:text-[#7dbbec]"
-          >
-            request access
-          </Link>
-          .
-        </p>
-      )}
-
       <p className="text-[13px] text-brand-navy/65 dark:text-white/65">
-        Members get upcoming events, guides and recruiting resources in one
+        Approved members get upcoming events, guides and recruiting resources in one
         place.
       </p>
     </AuthShell>
