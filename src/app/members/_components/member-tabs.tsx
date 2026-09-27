@@ -8,9 +8,9 @@ import type {
   ShowcasePost,
 } from "@/lib/members-db";
 
-// Four sections below the resource search on /members: Recruiting
-// resources (default), What's new, Member Directory, AnderTech Showcase.
-// Plain ?tab= links (like the category filters on /members/events), so
+// Four sections above "Next up" on /members: Recruiting resources
+// (default), What's new, Member Directory, AnderTech Showcase. Plain
+// ?tab= links (like the category filters on /members/events), so
 // switching tabs works without JavaScript and is a shareable URL. Only the
 // active tab's data is ever fetched (see members/page.tsx) -- the other
 // three tabs' queries never run on a given load.
@@ -28,18 +28,14 @@ export function isTabKey(value: string | undefined): value is TabKey {
   return TABS.some((t) => t.key === value);
 }
 
-const chipBase =
-  "inline-flex min-h-10 shrink-0 items-center rounded-full border px-3.5 text-sm font-medium";
-const chipOff =
-  "border-zinc-200 bg-white text-zinc-600 hover:border-brand-blue dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400";
-const chipOn =
-  "border-brand-navy bg-brand-navy text-white dark:border-brand-gold dark:bg-brand-gold dark:text-brand-navy";
-
+// An underlined tab strip (not the pill-shaped filter chips used elsewhere,
+// e.g. Browse's category chips) -- these are real, distinct sections rather
+// than filters over one list, so they read more clearly as tabs.
 function TabsNav({ active }: { active: TabKey }) {
   return (
     <nav
       aria-label="Members sections"
-      className="-mx-5 flex gap-2 overflow-x-auto px-5 pb-2 md:mx-0 md:flex-wrap md:overflow-visible md:px-0"
+      className="-mx-5 flex gap-1 overflow-x-auto border-b border-zinc-200 px-5 md:mx-0 md:px-0 dark:border-zinc-800"
     >
       {TABS.map((t) => (
         <Link
@@ -50,7 +46,11 @@ function TabsNav({ active }: { active: TabKey }) {
               : `/members?tab=${t.key}#member-tabs`
           }
           aria-current={active === t.key ? "page" : undefined}
-          className={`${chipBase} ${active === t.key ? chipOn : chipOff}`}
+          className={`-mb-px whitespace-nowrap border-b-2 px-3.5 py-2.5 text-sm font-medium sm:px-4 ${
+            active === t.key
+              ? "border-brand-navy text-brand-navy dark:border-brand-gold dark:text-brand-gold"
+              : "border-transparent text-zinc-600 hover:border-zinc-300 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
+          }`}
         >
           {t.label}
         </Link>

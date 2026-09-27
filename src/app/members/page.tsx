@@ -82,10 +82,10 @@ export default async function MembersPage({ searchParams }: Props) {
       <Hero firstName={firstName} next={events[0] ?? null} />
 
       <div className="mx-auto max-w-5xl px-5 pb-10">
+        <MemberTabs {...tabData} />
         <NextUp events={events} />
         <StartHere resources={featured} />
         <Browse groups={groups} q={q} cat={cat} />
-        <MemberTabs {...tabData} />
         <FooterCards
           contactEmail={site.contactEmail}
           subjectPrefix={site.feedbackSubject}
