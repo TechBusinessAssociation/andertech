@@ -41,6 +41,7 @@ function Media({ chapter, number }: { chapter: Chapter; number: string }) {
           alt={chapter.photo.alt}
           fill
           sizes="(min-width: 1024px) 560px, (min-width: 768px) 55vw, 100vw"
+          quality={90}
           className="drift object-cover"
         />
       </div>

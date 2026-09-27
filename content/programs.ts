@@ -104,7 +104,7 @@ export const chapters: Chapter[] = [
       },
     ],
     photo: {
-      src: "/photos/networking.webp",
+      src: "/photos/networking.jpg",
       alt: "A large group of AnderTech members and guests posing together at an evening mixer under string lights",
     },
   },
