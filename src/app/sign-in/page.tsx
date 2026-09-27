@@ -139,13 +139,14 @@ export default async function SignInPage({ searchParams }: SignInPageProps) {
 
       {!email && (
         <p className="text-sm text-brand-navy/75 dark:text-white/75">
-          Not a member yet?{" "}
+          First time on this website? You might need to{" "}
           <Link
             href="/request-access"
             className="font-semibold text-brand-blue underline dark:text-[#7dbbec]"
           >
-            Request access
+            request access
           </Link>
+          .
         </p>
       )}
 
