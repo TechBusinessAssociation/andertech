@@ -1,6 +1,6 @@
 import NextAuth from "next-auth";
 import { authConfig } from "./auth.config";
-import { isApprovedMember } from "@/lib/members-db";
+import { isApprovedMember, saveGoogleName } from "@/lib/members-db";
 import { isEnvAdminEmail } from "@/lib/admin";
 
 // Full config: the Edge-safe base (auth.config.ts) plus the membership
@@ -23,6 +23,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     // Admins granted the role in the database are members already, so they
     // pass the normal check below.
     async signIn({ user }) {
+      // Best-effort, never blocks sign-in -- see saveGoogleName's comment.
+      // Every sign-in, not just the first, so it stays in sync if someone
+      // changes their Google account's display name later.
+      await saveGoogleName(user.email, user.name);
+
       if (isEnvAdminEmail(user.email)) return true;
       return await isApprovedMember(user.email);
     },

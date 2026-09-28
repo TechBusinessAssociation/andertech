@@ -135,10 +135,13 @@ function DirectoryTab({
         <ul className="divide-y divide-zinc-200 rounded-2xl border border-zinc-200 bg-white dark:divide-zinc-800 dark:border-zinc-800 dark:bg-zinc-900">
           {visible.map((m) => {
             // Display name wins when a member has set one (self-service, on
-            // /members/profile). For anyone who hasn't yet, show just the
-            // email's local part rather than printing their full address to
-            // every other member.
-            const name = m.displayName || m.email.split("@")[0];
+            // /members/profile). Otherwise their Google account name, saved
+            // automatically on sign-in (src/auth.ts). Only if neither exists
+            // yet (e.g. they've never signed in since this was added) does
+            // this fall back to just the email's local part, rather than
+            // printing their full address to every other member.
+            const name =
+              m.displayName || m.googleName || m.email.split("@")[0];
             return (
               <li
                 key={m.email}

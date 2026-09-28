@@ -103,13 +103,20 @@ create index if not exists access_requests_status_idx on access_requests (status
 -- options in src/lib/programs.ts (Full-Time MBA / FEMBA / EMBA), enforced in
 -- the UI, not a DB constraint, so a new track doesn't need a migration.
 -- Read-only on /admin/members; edited only by the member themselves.
--- Safe to re-run.
+-- google_name is different: not self-edited, and not shown to the member
+-- themselves at all -- it's a copy of their Google account name, saved
+-- automatically on sign-in (src/auth.ts), so the Member Directory has
+-- something better than an email to show for anyone who hasn't set a
+-- display_name yet (the site can only ever read the signed-in visitor's
+-- own Google name live; this is what makes it available for everyone
+-- else's view of the directory too). Safe to re-run.
 
 alter table members
   add column if not exists display_name text,
   add column if not exists grad_year smallint,
   add column if not exists program text,
-  add column if not exists linkedin_url text;
+  add column if not exists linkedin_url text,
+  add column if not exists google_name text;
 
 -- --- Members-only tabs on /members (Recruiting / What's new / Directory / Showcase) ---
 -- Recruiting resources, What's new and AnderTech Showcase are all built from

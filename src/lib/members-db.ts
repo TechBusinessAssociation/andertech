@@ -83,6 +83,10 @@ export async function updateMemberProfile(
 export type DirectoryMember = {
   email: string;
   displayName: string | null;
+  // A copy of their Google account name, saved automatically on sign-in
+  // (see saveGoogleName below and schema.sql's comment on this column) --
+  // the fallback for anyone who hasn't set a display_name of their own yet.
+  googleName: string | null;
   gradYear: number | null;
   program: string | null;
   linkedinUrl: string | null;
@@ -91,19 +95,44 @@ export type DirectoryMember = {
 export async function getDirectoryMembers(): Promise<DirectoryMember[]> {
   try {
     const { rows } = await sql`
-      select email, display_name, grad_year, program, linkedin_url
+      select email, display_name, google_name, grad_year, program, linkedin_url
       from members
-      order by coalesce(display_name, email) asc
+      order by coalesce(display_name, google_name, email) asc
     `;
     return rows.map((row) => ({
       email: row.email as string,
       displayName: (row.display_name as string | null) ?? null,
+      googleName: (row.google_name as string | null) ?? null,
       gradYear: (row.grad_year as number | null) ?? null,
       program: (row.program as string | null) ?? null,
       linkedinUrl: (row.linkedin_url as string | null) ?? null,
     }));
   } catch {
     return [];
+  }
+}
+
+// Called from src/auth.ts on every successful sign-in, so the Member
+// Directory has something better than an email to fall back to for anyone
+// who hasn't visited /members/profile yet. A plain update, not an insert --
+// it only ever touches a members row that already exists (an env-admin who
+// isn't a member yet has no row to update, and that's fine, a no-op).
+// Best-effort: never throws, so a database hiccup here can never block
+// sign-in itself.
+export async function saveGoogleName(
+  email: string | null | undefined,
+  name: string | null | undefined,
+): Promise<void> {
+  if (!email || !name) return;
+  const normalized = email.trim().toLowerCase();
+  const trimmed = name.trim();
+  if (!trimmed) return;
+  try {
+    await sql`
+      update members set google_name = ${trimmed} where email = ${normalized}
+    `;
+  } catch {
+    // Best-effort, see comment above.
   }
 }
 
