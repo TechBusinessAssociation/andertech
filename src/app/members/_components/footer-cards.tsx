@@ -17,19 +17,19 @@ export function FooterCards({
 
   return (
     <section aria-label="Help" className="py-8 md:py-10">
-      <div className="grid content-start gap-2 rounded-2xl bg-brand-cream p-[18px] text-brand-navy dark:bg-[#33290f] dark:text-zinc-100">
-        <h2 className="text-base font-semibold tracking-tight">
-          Broken link or missing something?
-        </h2>
-        <p className="text-sm opacity-80">
-          {contactEmail
-            ? "Tell the board and we will fix it or add it."
-            : "Tell a board member and we will fix it or add it."}
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-brand-cream p-[18px] text-brand-navy dark:bg-[#33290f] dark:text-zinc-100">
+        <p className="text-sm">
+          <span className="font-semibold">Broken link or missing something?</span>{" "}
+          <span className="opacity-80">
+            {contactEmail
+              ? "Tell the board and we will fix it or add it."
+              : "Tell a board member and we will fix it or add it."}
+          </span>
         </p>
         {mailto && (
           <a
             href={mailto}
-            className="mt-1 inline-flex min-h-11 w-fit items-center rounded-[10px] border border-brand-navy/15 bg-white px-[18px] text-sm font-semibold text-brand-navy hover:bg-brand-sky dark:border-white/15 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800"
+            className="inline-flex min-h-11 shrink-0 items-center rounded-[10px] border border-brand-navy/15 bg-white px-[18px] text-sm font-semibold text-brand-navy hover:bg-brand-sky dark:border-white/15 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800"
           >
             Send feedback by email
           </a>

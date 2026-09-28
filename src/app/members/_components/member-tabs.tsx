@@ -132,33 +132,33 @@ function DirectoryTab({
           {needle ? `No members match "${dq}".` : "No members yet."}
         </p>
       ) : (
-        <ul className="grid gap-3 sm:grid-cols-2">
+        <ul className="divide-y divide-zinc-200 rounded-2xl border border-zinc-200 bg-white dark:divide-zinc-800 dark:border-zinc-800 dark:bg-zinc-900">
           {visible.map((m) => (
             <li
               key={m.email}
-              className="flex items-center justify-between gap-3 rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900"
+              className="flex items-center justify-between gap-3 px-4 py-3"
             >
-              <div className="min-w-0">
-                <p className="truncate font-medium">
-                  {m.displayName || m.email}
-                </p>
+              <p className="min-w-0 truncate font-medium">
+                {m.displayName || m.email}
+              </p>
+              <div className="flex shrink-0 items-center gap-3">
                 {(m.program || m.gradYear) && (
-                  <p className="text-sm text-zinc-600 dark:text-zinc-400">
+                  <span className="text-sm text-zinc-600 dark:text-zinc-400">
                     {[m.program, m.gradYear].filter(Boolean).join(" · ")}
-                  </p>
+                  </span>
+                )}
+                {m.linkedinUrl && (
+                  <a
+                    href={m.linkedinUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={`${m.displayName || m.email}'s LinkedIn`}
+                    className="rounded-full border border-zinc-200 p-2 hover:border-brand-blue dark:border-zinc-700"
+                  >
+                    <Icon name="linkedin" className="size-4" />
+                  </a>
                 )}
               </div>
-              {m.linkedinUrl && (
-                <a
-                  href={m.linkedinUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label={`${m.displayName || m.email}'s LinkedIn`}
-                  className="shrink-0 rounded-full border border-zinc-200 p-2 hover:border-brand-blue dark:border-zinc-700"
-                >
-                  <Icon name="linkedin" className="size-4" />
-                </a>
-              )}
             </li>
           ))}
         </ul>
