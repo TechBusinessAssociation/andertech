@@ -118,16 +118,19 @@ export type MemberResource = {
 };
 
 export type ResourceGroup = {
+  // null only for the "Other" bucket (resources with no category at all --
+  // only possible for rows created before categories existed). Every real
+  // category has an id, which is what /members/categories/[id] links to.
+  id: number | null;
   name: string;
   description: string | null;
   resources: MemberResource[];
 };
 
-// Groups follow categories.sort_order; resources with no category (only
-// possible for rows created before categories existed) land in "Other",
-// under the Recruiting tab (see schema.sql's comment on categories.section --
-// that's also where categories default to, and where the old standalone
-// Browse section folded into).
+// Groups follow categories.sort_order; resources with no category land in
+// "Other", under the Recruiting tab (see schema.sql's comment on
+// categories.section -- that's also where categories default to, and where
+// the old standalone Browse section folded into).
 export async function getResourceGroups(
   section: Section,
 ): Promise<ResourceGroup[]> {
@@ -147,6 +150,7 @@ export async function getResourceGroups(
       let group = groups.find((g) => g.name === name);
       if (!group) {
         group = {
+          id: (row.category_id as number | null) ?? null,
           name,
           description: (row.category_description as string | null) ?? null,
           resources: [],
@@ -158,6 +162,44 @@ export async function getResourceGroups(
     return groups;
   } catch {
     return [];
+  }
+}
+
+export type CategoryDetail = {
+  id: number;
+  name: string;
+  description: string | null;
+  section: Section;
+  resources: MemberResource[];
+};
+
+// One category and its resources, for /members/categories/[id] -- the page
+// a category card on a tab links to.
+export async function getCategoryDetail(
+  id: number,
+): Promise<CategoryDetail | null> {
+  try {
+    const { rows: categoryRows } = await sql`
+      select id, name, description, section from categories where id = ${id}
+    `;
+    const category = categoryRows[0];
+    if (!category) return null;
+
+    const { rows } = await sql`
+      select id, label, url, description, category_id, featured
+      from resources
+      where category_id = ${id}
+      order by sort_order asc, label asc
+    `;
+    return {
+      id: Number(category.id),
+      name: category.name as string,
+      description: (category.description as string | null) ?? null,
+      section: category.section as Section,
+      resources: rows as MemberResource[],
+    };
+  } catch {
+    return null;
   }
 }
 

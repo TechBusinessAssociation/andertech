@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Icon } from "@/components/icons";
 import type { DirectoryMember, RecruitingPage, ResourceGroup } from "@/lib/members-db";
-import { Browse } from "./browse";
+import { CategoryCards } from "./category-cards";
 
 // Four sections above "Next up" on /members: Recruiting resources
 // (default), What's new, Member Directory, AnderTech Showcase. Plain
@@ -12,9 +12,10 @@ import { Browse } from "./browse";
 //
 // Recruiting resources, What's new and AnderTech Showcase are all built the
 // same way: categories + resources, pre-filtered to that tab's section
-// (see schema.sql's comment on categories.section) and rendered with
-// <Browse>, the same search + category-chip UI. Member Directory is its own
-// thing -- every approved member, automatically, not a category of links.
+// (see schema.sql's comment on categories.section) and shown as category
+// cards (<CategoryCards>) -- click a card to see its resources on their own
+// page (/members/categories/[id]). Member Directory is its own thing --
+// every approved member, automatically, not a category of links.
 
 export const TABS = [
   { key: "recruiting", label: "Recruiting resources" },
@@ -29,9 +30,9 @@ export function isTabKey(value: string | undefined): value is TabKey {
   return TABS.some((t) => t.key === value);
 }
 
-// An underlined tab strip (not the pill-shaped filter chips used inside
-// <Browse>) -- these are real, distinct sections rather than filters over
-// one list, so they read more clearly as tabs.
+// An underlined tab strip (not the pill-shaped category cards below) --
+// these are real, distinct sections rather than filters over one list, so
+// they read more clearly as tabs.
 function TabsNav({ active }: { active: TabKey }) {
   return (
     <nav
@@ -63,13 +64,9 @@ function TabsNav({ active }: { active: TabKey }) {
 function RecruitingTab({
   dashboardUrl,
   groups,
-  q,
-  cat,
 }: {
   dashboardUrl: string | null;
   groups: ResourceGroup[];
-  q: string;
-  cat: string | null;
 }) {
   return (
     <div className="grid gap-5">
@@ -83,11 +80,8 @@ function RecruitingTab({
           />
         </div>
       )}
-      <Browse
-        tab="recruiting"
+      <CategoryCards
         groups={groups}
-        q={q}
-        cat={cat}
         emptyMessage="Recruiting resources are coming soon. Add a category on /admin/categories (set its tab to Recruiting resources), then add resources to it on /admin/resources."
       />
     </div>
@@ -174,16 +168,10 @@ function DirectoryTab({
 }
 
 type Props =
-  | {
-      tab: "recruiting";
-      recruiting: RecruitingPage;
-      groups: ResourceGroup[];
-      q: string;
-      cat: string | null;
-    }
-  | { tab: "whats-new"; groups: ResourceGroup[]; q: string; cat: string | null }
+  | { tab: "recruiting"; recruiting: RecruitingPage; groups: ResourceGroup[] }
+  | { tab: "whats-new"; groups: ResourceGroup[] }
   | { tab: "directory"; members: DirectoryMember[]; dq: string }
-  | { tab: "showcase"; groups: ResourceGroup[]; q: string; cat: string | null };
+  | { tab: "showcase"; groups: ResourceGroup[] };
 
 export function MemberTabs(props: Props) {
   return (
@@ -201,16 +189,11 @@ export function MemberTabs(props: Props) {
           <RecruitingTab
             dashboardUrl={props.recruiting.dashboardUrl}
             groups={props.groups}
-            q={props.q}
-            cat={props.cat}
           />
         )}
         {props.tab === "whats-new" && (
-          <Browse
-            tab="whats-new"
+          <CategoryCards
             groups={props.groups}
-            q={props.q}
-            cat={props.cat}
             emptyMessage="No announcements yet. Add a category on /admin/categories (set its tab to What's new), then add resources to it on /admin/resources."
           />
         )}
@@ -218,11 +201,8 @@ export function MemberTabs(props: Props) {
           <DirectoryTab members={props.members} dq={props.dq} />
         )}
         {props.tab === "showcase" && (
-          <Browse
-            tab="showcase"
+          <CategoryCards
             groups={props.groups}
-            q={props.q}
-            cat={props.cat}
             emptyMessage="No showcase posts yet. Add a category on /admin/categories (set its tab to AnderTech Showcase), then add resources to it on /admin/resources."
           />
         )}
