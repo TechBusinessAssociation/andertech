@@ -18,10 +18,10 @@ const items: (Item | { group: string; items: Item[] })[] = [
     items: [
       { href: "/admin/categories", label: "Categories" },
       { href: "/admin/resources", label: "Resources" },
+      { href: "/admin/recruiting", label: "Recruiting dashboard" },
     ],
   },
   { href: "/admin/events", label: "Events" },
-  { href: "/admin/recruiting", label: "Recruiting dashboard" },
 ];
 
 export function AdminNav({ pendingRequests }: { pendingRequests: number }) {
