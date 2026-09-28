@@ -1,5 +1,6 @@
 import { sql } from "@vercel/postgres";
 import type { Role } from "@/lib/roles";
+import type { Section } from "@/lib/tab-sections";
 
 // Reads/writes the membership allow-list, member-only resource links (and
 // their categories) and members-only events in Vercel Postgres. Nothing here is in the repo -- see schema.sql for
@@ -33,6 +34,7 @@ export type MemberProfile = {
   displayName: string | null;
   gradYear: number | null;
   program: string | null;
+  linkedinUrl: string | null;
 };
 
 // Self-service profile fields (see schema.sql's comment on the members
@@ -43,7 +45,7 @@ export async function getMemberProfile(
   const normalized = email.trim().toLowerCase();
   try {
     const { rows } = await sql`
-      select display_name, grad_year, program
+      select display_name, grad_year, program, linkedin_url
       from members where email = ${normalized} limit 1
     `;
     const row = rows[0];
@@ -51,9 +53,10 @@ export async function getMemberProfile(
       displayName: (row?.display_name as string | null) ?? null,
       gradYear: (row?.grad_year as number | null) ?? null,
       program: (row?.program as string | null) ?? null,
+      linkedinUrl: (row?.linkedin_url as string | null) ?? null,
     };
   } catch {
-    return { displayName: null, gradYear: null, program: null };
+    return { displayName: null, gradYear: null, program: null, linkedinUrl: null };
   }
 }
 
@@ -66,9 +69,42 @@ export async function updateMemberProfile(
     update members
     set display_name = ${profile.displayName},
         grad_year = ${profile.gradYear},
-        program = ${profile.program}
+        program = ${profile.program},
+        linkedin_url = ${profile.linkedinUrl}
     where email = ${normalized}
   `;
+}
+
+// Every approved member, for the Member Directory tab on /members. A name
+// only shows if that member has set one on their own profile -- there is no
+// other source for it (we can only ever read the signed-in visitor's own
+// Google name, never anyone else's), so this fills in gradually as members
+// visit /members/profile, not all at once.
+export type DirectoryMember = {
+  email: string;
+  displayName: string | null;
+  gradYear: number | null;
+  program: string | null;
+  linkedinUrl: string | null;
+};
+
+export async function getDirectoryMembers(): Promise<DirectoryMember[]> {
+  try {
+    const { rows } = await sql`
+      select email, display_name, grad_year, program, linkedin_url
+      from members
+      order by coalesce(display_name, email) asc
+    `;
+    return rows.map((row) => ({
+      email: row.email as string,
+      displayName: (row.display_name as string | null) ?? null,
+      gradYear: (row.grad_year as number | null) ?? null,
+      program: (row.program as string | null) ?? null,
+      linkedinUrl: (row.linkedin_url as string | null) ?? null,
+    }));
+  } catch {
+    return [];
+  }
 }
 
 export type MemberResource = {
@@ -88,14 +124,21 @@ export type ResourceGroup = {
 };
 
 // Groups follow categories.sort_order; resources with no category (only
-// possible for rows created before categories existed) land in "Other".
-export async function getResourceGroups(): Promise<ResourceGroup[]> {
+// possible for rows created before categories existed) land in "Other",
+// under the Recruiting tab (see schema.sql's comment on categories.section --
+// that's also where categories default to, and where the old standalone
+// Browse section folded into).
+export async function getResourceGroups(
+  section: Section,
+): Promise<ResourceGroup[]> {
   try {
     const { rows } = await sql`
       select r.id, r.label, r.url, r.description, r.category_id, r.featured,
              c.name as category_name, c.description as category_description
       from resources r
       left join categories c on c.id = r.category_id
+      where c.section = ${section}
+         or (r.category_id is null and ${section} = 'recruiting')
       order by c.sort_order asc nulls last, c.name asc, r.sort_order asc, r.label asc
     `;
     const groups: ResourceGroup[] = [];
@@ -334,12 +377,13 @@ export type Category = {
   name: string;
   description: string | null;
   sort_order: number;
+  section: Section;
 };
 
 export async function getCategories(): Promise<Category[]> {
   const { rows } = await sql`
-    select id, name, description, sort_order from categories
-    order by sort_order asc, name asc
+    select id, name, description, sort_order, section from categories
+    order by section asc, sort_order asc, name asc
   `;
   return rows as Category[];
 }
@@ -348,12 +392,12 @@ export type CategoryWithCount = Category & { resource_count: number };
 
 export async function getCategoriesWithCounts(): Promise<CategoryWithCount[]> {
   const { rows } = await sql`
-    select c.id, c.name, c.description, c.sort_order,
+    select c.id, c.name, c.description, c.sort_order, c.section,
            count(r.id)::int as resource_count
     from categories c
     left join resources r on r.category_id = c.id
     group by c.id
-    order by c.sort_order asc, c.name asc
+    order by c.section asc, c.sort_order asc, c.name asc
   `;
   return rows as CategoryWithCount[];
 }
@@ -362,12 +406,13 @@ export async function addCategory(
   name: string,
   description: string,
   sortOrder: number,
+  section: Section,
 ): Promise<void> {
   const trimmed = name.trim();
   if (!trimmed) return;
   await sql`
-    insert into categories (name, description, sort_order)
-    values (${trimmed}, ${emptyToNull(description)}, ${sortOrder})
+    insert into categories (name, description, sort_order, section)
+    values (${trimmed}, ${emptyToNull(description)}, ${sortOrder}, ${section})
     on conflict (name) do nothing
   `;
 }
@@ -377,13 +422,14 @@ export async function updateCategory(
   name: string,
   description: string,
   sortOrder: number,
+  section: Section,
 ): Promise<void> {
   const trimmed = name.trim();
   if (!trimmed) return;
   await sql`
     update categories
     set name = ${trimmed}, description = ${emptyToNull(description)},
-        sort_order = ${sortOrder}
+        sort_order = ${sortOrder}, section = ${section}
     where id = ${id}
   `;
 }
@@ -555,4 +601,35 @@ export async function updateEvent(
 
 export async function removeEvent(id: number): Promise<void> {
   await sql`delete from events where id = ${id}`;
+}
+
+// --- Recruiting tab: the pinned dashboard embed (a settings row, id = 1 --
+// see schema.sql). The rest of the tab (reporting/invite-offer/toolkit
+// links) is now just categories + resources with section = 'recruiting'
+// (getResourceGroups above), not fields here.
+
+export type RecruitingPage = {
+  dashboardUrl: string | null;
+};
+
+export async function getRecruitingPage(): Promise<RecruitingPage> {
+  try {
+    const { rows } = await sql`
+      select dashboard_url from recruiting_page where id = 1
+    `;
+    return { dashboardUrl: (rows[0]?.dashboard_url as string | null) ?? null };
+  } catch {
+    return { dashboardUrl: null };
+  }
+}
+
+export async function updateRecruitingPage(
+  page: RecruitingPage,
+): Promise<void> {
+  const url = page.dashboardUrl ? cleanUrl(page.dashboardUrl) : null;
+  await sql`
+    insert into recruiting_page (id, dashboard_url)
+    values (1, ${url})
+    on conflict (id) do update set dashboard_url = excluded.dashboard_url
+  `;
 }

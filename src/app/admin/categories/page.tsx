@@ -1,8 +1,10 @@
 import Link from "next/link";
 import { getCategoriesWithCounts } from "@/lib/members-db";
 import { requireAdmin } from "@/lib/require-admin";
+import { SECTIONS, SECTION_LABELS } from "@/lib/tab-sections";
 import { removeCategoryAction, saveCategoryAction } from "./actions";
 import {
+  Badge,
   Notice,
   PageHeader,
   cardClass,
@@ -44,7 +46,7 @@ export default async function AdminCategoriesPage({ searchParams }: Props) {
     <div className="flex flex-col gap-6">
       <PageHeader
         title="Categories"
-        description="The groups resources are listed under on the members page. Lowest order number shows first; leave gaps (10, 20, 30) so a new one can slot in between."
+        description="The groups resources are listed under, on one of the tabs on /members. Lowest order number shows first; leave gaps (10, 20, 30) so a new one can slot in between."
       />
 
       {notice && NOTICES[notice] && <Notice message={NOTICES[notice]} />}
@@ -87,6 +89,20 @@ export default async function AdminCategoriesPage({ searchParams }: Props) {
               />
             </label>
           </div>
+          <label className={`${fieldLabelClass} sm:w-64`}>
+            Tab
+            <select
+              name="section"
+              defaultValue={editing?.section ?? "recruiting"}
+              className={`${inputClass} font-normal`}
+            >
+              {SECTIONS.map((section) => (
+                <option key={section} value={section}>
+                  {SECTION_LABELS[section]}
+                </option>
+              ))}
+            </select>
+          </label>
           <div className="flex items-center gap-3">
             <button type="submit" className={primaryButtonClass}>
               {editing ? "Save changes" : "Add category"}
@@ -101,7 +117,7 @@ export default async function AdminCategoriesPage({ searchParams }: Props) {
       </section>
 
       <div className={tableWrapClass}>
-        <table className={`${tableClass} min-w-[32rem]`}>
+        <table className={`${tableClass} min-w-[40rem]`}>
           <thead className={theadClass}>
             <tr>
               <th scope="col" className={thClass}>
@@ -114,6 +130,9 @@ export default async function AdminCategoriesPage({ searchParams }: Props) {
                 Order
               </th>
               <th scope="col" className={thClass}>
+                Tab
+              </th>
+              <th scope="col" className={thClass}>
                 Resources
               </th>
               <th scope="col" className={thClass}>
@@ -124,7 +143,7 @@ export default async function AdminCategoriesPage({ searchParams }: Props) {
           <tbody>
             {categories.length === 0 ? (
               <tr className={trClass}>
-                <td colSpan={5} className={`${tdClass} text-zinc-600`}>
+                <td colSpan={6} className={`${tdClass} text-zinc-600`}>
                   No categories yet.
                 </td>
               </tr>
@@ -136,6 +155,9 @@ export default async function AdminCategoriesPage({ searchParams }: Props) {
                     {category.description ?? ""}
                   </td>
                   <td className={tdClass}>{category.sort_order}</td>
+                  <td className={tdClass}>
+                    <Badge>{SECTION_LABELS[category.section]}</Badge>
+                  </td>
                   <td className={tdClass}>{category.resource_count}</td>
                   <td className={tdClass}>
                     <div className="flex items-center gap-4">

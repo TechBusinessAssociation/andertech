@@ -8,6 +8,7 @@ import {
   updateCategory,
 } from "@/lib/members-db";
 import { requireAdmin } from "@/lib/require-admin";
+import { isSection } from "@/lib/tab-sections";
 import { toInt } from "../helpers";
 
 function refresh() {
@@ -22,15 +23,17 @@ export async function saveCategoryAction(formData: FormData) {
   const name = String(formData.get("name") ?? "");
   const description = String(formData.get("description") ?? "");
   const sortOrder = toInt(formData.get("sort_order"));
+  const rawSection = String(formData.get("section") ?? "");
+  const section = isSection(rawSection) ? rawSection : "recruiting";
   const rawId = formData.get("id");
 
   if (!name.trim()) {
     redirect("/admin/categories?notice=name-required");
   }
   if (rawId) {
-    await updateCategory(toInt(rawId), name, description, sortOrder);
+    await updateCategory(toInt(rawId), name, description, sortOrder, section);
   } else {
-    await addCategory(name, description, sortOrder);
+    await addCategory(name, description, sortOrder, section);
   }
 
   refresh();

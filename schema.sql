@@ -108,4 +108,37 @@ create index if not exists access_requests_status_idx on access_requests (status
 alter table members
   add column if not exists display_name text,
   add column if not exists grad_year smallint,
-  add column if not exists program text;
+  add column if not exists program text,
+  add column if not exists linkedin_url text;
+
+-- --- Members-only tabs on /members (Recruiting / What's new / Directory / Showcase) ---
+-- Recruiting resources, What's new and AnderTech Showcase are all built from
+-- the same categories/resources tables above -- each category now belongs to
+-- one of these three tabs (`section`, below), so a category is really "a
+-- named block of links inside one tab" (e.g. Recruiting's "Resume bot"
+-- category, holding one or more resume-bot links as its resources). The
+-- Member Directory tab needs no table of its own -- it lists every row
+-- already in `members`, using the profile fields above, automatically (no
+-- admin work, so it isn't a fourth "section" here).
+
+-- Existing categories default to 'recruiting': most of what was already in
+-- the general resources list (Prepare, Find roles, Peers, Club insights)
+-- reads as recruiting-related, and this is where the old standalone "Browse"
+-- section on /members folded into. Move any category to a different tab any
+-- time on /admin/categories.
+alter table categories
+  add column if not exists section text not null default 'recruiting'
+    check (section in ('recruiting', 'whats-new', 'showcase'));
+
+-- One settings row (id is always 1), just the embedded Looker Studio
+-- dashboard link -- pinned above Recruiting's categories, not a resource
+-- itself (an iframe embed isn't a plain link, so it needs its own field
+-- rather than living in the resources table). Safe to re-run: the insert
+-- only ever adds the one row, once.
+create table if not exists recruiting_page (
+  id int primary key default 1,
+  dashboard_url text,
+  check (id = 1)
+);
+
+insert into recruiting_page (id) values (1) on conflict (id) do nothing;

@@ -18,6 +18,7 @@ const items: (Item | { group: string; items: Item[] })[] = [
     items: [
       { href: "/admin/categories", label: "Categories" },
       { href: "/admin/resources", label: "Resources" },
+      { href: "/admin/recruiting", label: "Recruiting dashboard" },
     ],
   },
   { href: "/admin/events", label: "Events" },
