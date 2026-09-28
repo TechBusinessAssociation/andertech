@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getAdminResources, getCategories } from "@/lib/members-db";
 import { requireAdmin } from "@/lib/require-admin";
+import { SECTIONS, SECTION_LABELS } from "@/lib/tab-sections";
 import { removeResourceAction, saveResourceAction } from "./actions";
 import {
   Badge,
@@ -133,11 +134,21 @@ export default async function AdminResourcesPage({ searchParams }: Props) {
                   <option value="" disabled>
                     Choose a category
                   </option>
-                  {categories.map((category) => (
-                    <option key={category.id} value={category.id}>
-                      {category.name}
-                    </option>
-                  ))}
+                  {SECTIONS.map((section) => {
+                    const inSection = categories.filter(
+                      (c) => c.section === section,
+                    );
+                    if (inSection.length === 0) return null;
+                    return (
+                      <optgroup key={section} label={SECTION_LABELS[section]}>
+                        {inSection.map((category) => (
+                          <option key={category.id} value={category.id}>
+                            {category.name}
+                          </option>
+                        ))}
+                      </optgroup>
+                    );
+                  })}
                 </select>
               </label>
               <label className={`${fieldLabelClass} sm:w-40`}>

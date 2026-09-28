@@ -10,17 +10,9 @@ const SECTION = "/admin/recruiting";
 export async function saveRecruitingPageAction(formData: FormData) {
   await requireAdmin();
 
-  const field = (name: string) => String(formData.get(name) ?? "").trim();
+  const dashboardUrl = String(formData.get("dashboardUrl") ?? "").trim();
 
-  await updateRecruitingPage({
-    dashboardUrl: field("dashboardUrl") || null,
-    reportingUrl: field("reportingUrl") || null,
-    inviteOfferUrl: field("inviteOfferUrl") || null,
-    resumeBotUrl: field("resumeBotUrl") || null,
-    coverLetterUrl: field("coverLetterUrl") || null,
-    questionBankUrl: field("questionBankUrl") || null,
-    playbooksUrl: field("playbooksUrl") || null,
-  });
+  await updateRecruitingPage({ dashboardUrl: dashboardUrl || null });
 
   revalidatePath(SECTION);
   revalidatePath("/members");

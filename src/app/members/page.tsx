@@ -1,18 +1,15 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import {
-  getAnnouncements,
   getDirectoryMembers,
   getFeaturedResources,
   getMemberProfile,
   getRecruitingPage,
   getResourceGroups,
-  getShowcasePosts,
   getUpcomingEvents,
   isApprovedMember,
 } from "@/lib/members-db";
 import { site } from "../../../content/site";
-import { Browse } from "./_components/browse";
 import { FooterCards } from "./_components/footer-cards";
 import { Hero } from "./_components/hero";
 import { isTabKey, MemberTabs, type TabKey } from "./_components/member-tabs";
@@ -24,18 +21,34 @@ type Props = {
 };
 
 // Only the active tab's data is ever fetched -- the other three tabs' DB
-// queries never run on a given page load. See member-tabs.tsx.
-async function loadTab(tab: TabKey, dq: string) {
+// queries never run on a given page load. Recruiting/What's new/Showcase
+// each get their own categories + resources, pre-filtered by section
+// (getResourceGroups); q/cat are validated against that tab's own groups,
+// not a global list, since a category can only ever belong to one tab.
+async function loadTab(
+  tab: TabKey,
+  q: string,
+  rawCat: string | undefined,
+  dq: string,
+) {
   switch (tab) {
-    case "whats-new":
-      return { tab, announcements: await getAnnouncements() } as const;
     case "directory":
       return { tab, members: await getDirectoryMembers(), dq } as const;
-    case "showcase":
-      return { tab, posts: await getShowcasePosts() } as const;
+    case "whats-new":
+    case "showcase": {
+      const groups = await getResourceGroups(tab);
+      const cat = groups.some((g) => g.name === rawCat) ? (rawCat ?? null) : null;
+      return { tab, groups, q, cat } as const;
+    }
     case "recruiting":
-    default:
-      return { tab: "recruiting" as const, recruiting: await getRecruitingPage() };
+    default: {
+      const [recruiting, groups] = await Promise.all([
+        getRecruitingPage(),
+        getResourceGroups("recruiting"),
+      ]);
+      const cat = groups.some((g) => g.name === rawCat) ? (rawCat ?? null) : null;
+      return { tab: "recruiting" as const, recruiting, groups, q, cat };
+    }
   }
 }
 
@@ -53,18 +66,12 @@ export default async function MembersPage({ searchParams }: Props) {
   }
 
   const params = await searchParams;
-  const [groups, featured, events, profile] = await Promise.all([
-    getResourceGroups(),
+  const [featured, events, profile] = await Promise.all([
     getFeaturedResources(),
     getUpcomingEvents(),
     getMemberProfile(email),
   ]);
 
-  const q = (params.q ?? "").slice(0, 100);
-  // Ignore a ?cat= that isn't a real category rather than showing nothing.
-  const cat = groups.some((group) => group.name === params.cat)
-    ? (params.cat ?? null)
-    : null;
   // The member's own display name (set on /members/profile) wins over their
   // Google account name, so the greeting doesn't reveal a legal/full name
   // someone didn't choose to share.
@@ -74,8 +81,9 @@ export default async function MembersPage({ searchParams }: Props) {
     null;
 
   const tab: TabKey = isTabKey(params.tab) ? params.tab : "recruiting";
+  const q = (params.q ?? "").slice(0, 100);
   const dq = (params.dq ?? "").slice(0, 100);
-  const tabData = await loadTab(tab, dq);
+  const tabData = await loadTab(tab, q, params.cat, dq);
 
   return (
     <main className="flex-1">
@@ -85,7 +93,6 @@ export default async function MembersPage({ searchParams }: Props) {
         <MemberTabs {...tabData} />
         <NextUp events={events} />
         <StartHere resources={featured} />
-        <Browse groups={groups} q={q} cat={cat} />
         <FooterCards
           contactEmail={site.contactEmail}
           subjectPrefix={site.feedbackSubject}

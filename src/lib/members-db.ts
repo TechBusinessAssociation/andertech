@@ -1,5 +1,6 @@
 import { sql } from "@vercel/postgres";
 import type { Role } from "@/lib/roles";
+import type { Section } from "@/lib/tab-sections";
 
 // Reads/writes the membership allow-list, member-only resource links (and
 // their categories) and members-only events in Vercel Postgres. Nothing here is in the repo -- see schema.sql for
@@ -123,14 +124,21 @@ export type ResourceGroup = {
 };
 
 // Groups follow categories.sort_order; resources with no category (only
-// possible for rows created before categories existed) land in "Other".
-export async function getResourceGroups(): Promise<ResourceGroup[]> {
+// possible for rows created before categories existed) land in "Other",
+// under the Recruiting tab (see schema.sql's comment on categories.section --
+// that's also where categories default to, and where the old standalone
+// Browse section folded into).
+export async function getResourceGroups(
+  section: Section,
+): Promise<ResourceGroup[]> {
   try {
     const { rows } = await sql`
       select r.id, r.label, r.url, r.description, r.category_id, r.featured,
              c.name as category_name, c.description as category_description
       from resources r
       left join categories c on c.id = r.category_id
+      where c.section = ${section}
+         or (r.category_id is null and ${section} = 'recruiting')
       order by c.sort_order asc nulls last, c.name asc, r.sort_order asc, r.label asc
     `;
     const groups: ResourceGroup[] = [];
@@ -369,12 +377,13 @@ export type Category = {
   name: string;
   description: string | null;
   sort_order: number;
+  section: Section;
 };
 
 export async function getCategories(): Promise<Category[]> {
   const { rows } = await sql`
-    select id, name, description, sort_order from categories
-    order by sort_order asc, name asc
+    select id, name, description, sort_order, section from categories
+    order by section asc, sort_order asc, name asc
   `;
   return rows as Category[];
 }
@@ -383,12 +392,12 @@ export type CategoryWithCount = Category & { resource_count: number };
 
 export async function getCategoriesWithCounts(): Promise<CategoryWithCount[]> {
   const { rows } = await sql`
-    select c.id, c.name, c.description, c.sort_order,
+    select c.id, c.name, c.description, c.sort_order, c.section,
            count(r.id)::int as resource_count
     from categories c
     left join resources r on r.category_id = c.id
     group by c.id
-    order by c.sort_order asc, c.name asc
+    order by c.section asc, c.sort_order asc, c.name asc
   `;
   return rows as CategoryWithCount[];
 }
@@ -397,12 +406,13 @@ export async function addCategory(
   name: string,
   description: string,
   sortOrder: number,
+  section: Section,
 ): Promise<void> {
   const trimmed = name.trim();
   if (!trimmed) return;
   await sql`
-    insert into categories (name, description, sort_order)
-    values (${trimmed}, ${emptyToNull(description)}, ${sortOrder})
+    insert into categories (name, description, sort_order, section)
+    values (${trimmed}, ${emptyToNull(description)}, ${sortOrder}, ${section})
     on conflict (name) do nothing
   `;
 }
@@ -412,13 +422,14 @@ export async function updateCategory(
   name: string,
   description: string,
   sortOrder: number,
+  section: Section,
 ): Promise<void> {
   const trimmed = name.trim();
   if (!trimmed) return;
   await sql`
     update categories
     set name = ${trimmed}, description = ${emptyToNull(description)},
-        sort_order = ${sortOrder}
+        sort_order = ${sortOrder}, section = ${section}
     where id = ${id}
   `;
 }
@@ -592,213 +603,33 @@ export async function removeEvent(id: number): Promise<void> {
   await sql`delete from events where id = ${id}`;
 }
 
-// --- Recruiting tab settings (a single row, id = 1 -- see schema.sql) ---
+// --- Recruiting tab: the pinned dashboard embed (a settings row, id = 1 --
+// see schema.sql). The rest of the tab (reporting/invite-offer/toolkit
+// links) is now just categories + resources with section = 'recruiting'
+// (getResourceGroups above), not fields here.
 
 export type RecruitingPage = {
   dashboardUrl: string | null;
-  reportingUrl: string | null;
-  inviteOfferUrl: string | null;
-  resumeBotUrl: string | null;
-  coverLetterUrl: string | null;
-  questionBankUrl: string | null;
-  playbooksUrl: string | null;
-};
-
-const EMPTY_RECRUITING_PAGE: RecruitingPage = {
-  dashboardUrl: null,
-  reportingUrl: null,
-  inviteOfferUrl: null,
-  resumeBotUrl: null,
-  coverLetterUrl: null,
-  questionBankUrl: null,
-  playbooksUrl: null,
 };
 
 export async function getRecruitingPage(): Promise<RecruitingPage> {
   try {
     const { rows } = await sql`
-      select dashboard_url, reporting_url, invite_offer_url, resume_bot_url,
-             cover_letter_url, question_bank_url, playbooks_url
-      from recruiting_page where id = 1
+      select dashboard_url from recruiting_page where id = 1
     `;
-    const row = rows[0];
-    if (!row) return EMPTY_RECRUITING_PAGE;
-    return {
-      dashboardUrl: row.dashboard_url as string | null,
-      reportingUrl: row.reporting_url as string | null,
-      inviteOfferUrl: row.invite_offer_url as string | null,
-      resumeBotUrl: row.resume_bot_url as string | null,
-      coverLetterUrl: row.cover_letter_url as string | null,
-      questionBankUrl: row.question_bank_url as string | null,
-      playbooksUrl: row.playbooks_url as string | null,
-    };
+    return { dashboardUrl: (rows[0]?.dashboard_url as string | null) ?? null };
   } catch {
-    return EMPTY_RECRUITING_PAGE;
+    return { dashboardUrl: null };
   }
 }
 
 export async function updateRecruitingPage(
   page: RecruitingPage,
 ): Promise<void> {
-  const u = (value: string | null) => (value ? cleanUrl(value) : null);
+  const url = page.dashboardUrl ? cleanUrl(page.dashboardUrl) : null;
   await sql`
-    insert into recruiting_page
-      (id, dashboard_url, reporting_url, invite_offer_url, resume_bot_url,
-       cover_letter_url, question_bank_url, playbooks_url)
-    values
-      (1, ${u(page.dashboardUrl)}, ${u(page.reportingUrl)}, ${u(page.inviteOfferUrl)},
-       ${u(page.resumeBotUrl)}, ${u(page.coverLetterUrl)}, ${u(page.questionBankUrl)},
-       ${u(page.playbooksUrl)})
-    on conflict (id) do update set
-      dashboard_url = excluded.dashboard_url,
-      reporting_url = excluded.reporting_url,
-      invite_offer_url = excluded.invite_offer_url,
-      resume_bot_url = excluded.resume_bot_url,
-      cover_letter_url = excluded.cover_letter_url,
-      question_bank_url = excluded.question_bank_url,
-      playbooks_url = excluded.playbooks_url
+    insert into recruiting_page (id, dashboard_url)
+    values (1, ${url})
+    on conflict (id) do update set dashboard_url = excluded.dashboard_url
   `;
-}
-
-// --- What's new: a short manual announcement feed ---
-
-export type Announcement = {
-  id: number;
-  title: string;
-  body: string | null;
-  url: string | null;
-  created_at: string;
-};
-
-export async function getAnnouncements(limit = 20): Promise<Announcement[]> {
-  try {
-    const { rows } = await sql`
-      select id, title, body, url, to_char(created_at, 'YYYY-MM-DD') as created_at
-      from announcements
-      order by created_at desc
-      limit ${limit}
-    `;
-    return rows as Announcement[];
-  } catch {
-    return [];
-  }
-}
-
-export type AnnouncementInput = { title: string; body: string; url: string };
-
-function validAnnouncement(input: AnnouncementInput) {
-  const title = input.title.trim();
-  if (!title) return null;
-  const rawUrl = input.url.trim();
-  const url = rawUrl ? cleanUrl(rawUrl) : null;
-  if (rawUrl && !url) return null;
-  return { title, body: emptyToNull(input.body), url };
-}
-
-export async function addAnnouncement(
-  input: AnnouncementInput,
-): Promise<boolean> {
-  const a = validAnnouncement(input);
-  if (!a) return false;
-  await sql`
-    insert into announcements (title, body, url)
-    values (${a.title}, ${a.body}, ${a.url})
-  `;
-  return true;
-}
-
-export async function updateAnnouncement(
-  id: number,
-  input: AnnouncementInput,
-): Promise<boolean> {
-  const a = validAnnouncement(input);
-  if (!a) return false;
-  await sql`
-    update announcements
-    set title = ${a.title}, body = ${a.body}, url = ${a.url}
-    where id = ${id}
-  `;
-  return true;
-}
-
-export async function removeAnnouncement(id: number): Promise<void> {
-  await sql`delete from announcements where id = ${id}`;
-}
-
-// --- AnderTech Showcase: member projects/achievements the board posts ---
-
-export type ShowcasePost = {
-  id: number;
-  title: string;
-  description: string | null;
-  member_name: string | null;
-  url: string | null;
-  created_at: string;
-};
-
-export async function getShowcasePosts(limit = 20): Promise<ShowcasePost[]> {
-  try {
-    const { rows } = await sql`
-      select id, title, description, member_name, url,
-             to_char(created_at, 'YYYY-MM-DD') as created_at
-      from showcase_posts
-      order by created_at desc
-      limit ${limit}
-    `;
-    return rows as ShowcasePost[];
-  } catch {
-    return [];
-  }
-}
-
-export type ShowcasePostInput = {
-  title: string;
-  description: string;
-  memberName: string;
-  url: string;
-};
-
-function validShowcasePost(input: ShowcasePostInput) {
-  const title = input.title.trim();
-  if (!title) return null;
-  const rawUrl = input.url.trim();
-  const url = rawUrl ? cleanUrl(rawUrl) : null;
-  if (rawUrl && !url) return null;
-  return {
-    title,
-    description: emptyToNull(input.description),
-    memberName: emptyToNull(input.memberName),
-    url,
-  };
-}
-
-export async function addShowcasePost(
-  input: ShowcasePostInput,
-): Promise<boolean> {
-  const p = validShowcasePost(input);
-  if (!p) return false;
-  await sql`
-    insert into showcase_posts (title, description, member_name, url)
-    values (${p.title}, ${p.description}, ${p.memberName}, ${p.url})
-  `;
-  return true;
-}
-
-export async function updateShowcasePost(
-  id: number,
-  input: ShowcasePostInput,
-): Promise<boolean> {
-  const p = validShowcasePost(input);
-  if (!p) return false;
-  await sql`
-    update showcase_posts
-    set title = ${p.title}, description = ${p.description},
-        member_name = ${p.memberName}, url = ${p.url}
-    where id = ${id}
-  `;
-  return true;
-}
-
-export async function removeShowcasePost(id: number): Promise<void> {
-  await sql`delete from showcase_posts where id = ${id}`;
 }

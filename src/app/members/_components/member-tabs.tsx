@@ -1,19 +1,20 @@
 import Link from "next/link";
 import { Icon } from "@/components/icons";
-import { formatDay } from "@/lib/event-format";
-import type {
-  Announcement,
-  DirectoryMember,
-  RecruitingPage,
-  ShowcasePost,
-} from "@/lib/members-db";
+import type { DirectoryMember, RecruitingPage, ResourceGroup } from "@/lib/members-db";
+import { Browse } from "./browse";
 
 // Four sections above "Next up" on /members: Recruiting resources
 // (default), What's new, Member Directory, AnderTech Showcase. Plain
 // ?tab= links (like the category filters on /members/events), so
 // switching tabs works without JavaScript and is a shareable URL. Only the
-// active tab's data is ever fetched (see members/page.tsx) -- the other
-// three tabs' queries never run on a given load.
+// active tab's data is ever fetched (see members/page.tsx's loadTab) -- the
+// other three tabs' queries never run on a given load.
+//
+// Recruiting resources, What's new and AnderTech Showcase are all built the
+// same way: categories + resources, pre-filtered to that tab's section
+// (see schema.sql's comment on categories.section) and rendered with
+// <Browse>, the same search + category-chip UI. Member Directory is its own
+// thing -- every approved member, automatically, not a category of links.
 
 export const TABS = [
   { key: "recruiting", label: "Recruiting resources" },
@@ -28,9 +29,9 @@ export function isTabKey(value: string | undefined): value is TabKey {
   return TABS.some((t) => t.key === value);
 }
 
-// An underlined tab strip (not the pill-shaped filter chips used elsewhere,
-// e.g. Browse's category chips) -- these are real, distinct sections rather
-// than filters over one list, so they read more clearly as tabs.
+// An underlined tab strip (not the pill-shaped filter chips used inside
+// <Browse>) -- these are real, distinct sections rather than filters over
+// one list, so they read more clearly as tabs.
 function TabsNav({ active }: { active: TabKey }) {
   return (
     <nav
@@ -59,131 +60,37 @@ function TabsNav({ active }: { active: TabKey }) {
   );
 }
 
-const cardClass =
-  "rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-zinc-800 dark:bg-zinc-900";
-
-const linkCardClass =
-  "flex min-h-11 items-center justify-between gap-3 rounded-xl border border-zinc-200 px-4 py-3 text-sm font-medium hover:border-brand-blue hover:bg-brand-sky/40 dark:border-zinc-800 dark:hover:bg-white/5";
-
-function EmptyState({ children }: { children: React.ReactNode }) {
-  return (
-    <p className="rounded-2xl border border-dashed border-zinc-300 p-6 text-sm text-zinc-600 dark:border-zinc-700 dark:text-zinc-400">
-      {children}
-    </p>
-  );
-}
-
-function LinkCard({ href, label }: { href: string; label: string }) {
-  return (
-    <a
-      href={href}
-      target="_blank"
-      rel="noopener noreferrer"
-      className={linkCardClass}
-    >
-      {label}
-      <Icon name="arrow" className="size-4 shrink-0 opacity-60" />
-    </a>
-  );
-}
-
-function RecruitingTab({ page }: { page: RecruitingPage }) {
-  const toolkit = [
-    { label: "Resume bot", href: page.resumeBotUrl },
-    { label: "Cover letter", href: page.coverLetterUrl },
-    { label: "Question bank", href: page.questionBankUrl },
-    { label: "Playbooks", href: page.playbooksUrl },
-  ].filter((t): t is { label: string; href: string } => Boolean(t.href));
-
-  const hasAnything =
-    page.dashboardUrl ||
-    page.reportingUrl ||
-    page.inviteOfferUrl ||
-    toolkit.length > 0;
-
-  if (!hasAnything) {
-    return (
-      <EmptyState>
-        Recruiting resources are coming soon. Check back after the board
-        fills this in on /admin.
-      </EmptyState>
-    );
-  }
-
+function RecruitingTab({
+  dashboardUrl,
+  groups,
+  q,
+  cat,
+}: {
+  dashboardUrl: string | null;
+  groups: ResourceGroup[];
+  q: string;
+  cat: string | null;
+}) {
   return (
     <div className="grid gap-5">
-      {page.dashboardUrl && (
+      {dashboardUrl && (
         <div className="overflow-hidden rounded-2xl border border-zinc-200 shadow-sm dark:border-zinc-800">
           <iframe
-            src={page.dashboardUrl}
+            src={dashboardUrl}
             title="Recruiting dashboard"
             className="aspect-video w-full"
             loading="lazy"
           />
         </div>
       )}
-
-      {(page.reportingUrl || page.inviteOfferUrl) && (
-        <div className="grid gap-3 sm:grid-cols-2">
-          {page.reportingUrl && (
-            <LinkCard href={page.reportingUrl} label="Reporting survey" />
-          )}
-          {page.inviteOfferUrl && (
-            <LinkCard
-              href={page.inviteOfferUrl}
-              label="Report an offer / invite a friend"
-            />
-          )}
-        </div>
-      )}
-
-      {toolkit.length > 0 && (
-        <div className={cardClass}>
-          <p className="mb-3 text-sm font-semibold">Toolkit</p>
-          <div className="grid gap-3 sm:grid-cols-2">
-            {toolkit.map((t) => (
-              <LinkCard key={t.label} href={t.href} label={t.label} />
-            ))}
-          </div>
-        </div>
-      )}
+      <Browse
+        tab="recruiting"
+        groups={groups}
+        q={q}
+        cat={cat}
+        emptyMessage="Recruiting resources are coming soon. Add a category on /admin/categories (set its tab to Recruiting resources), then add resources to it on /admin/resources."
+      />
     </div>
-  );
-}
-
-function WhatsNewTab({ items }: { items: Announcement[] }) {
-  if (items.length === 0) {
-    return <EmptyState>No announcements yet.</EmptyState>;
-  }
-  return (
-    <ul className="grid gap-3">
-      {items.map((a) => (
-        <li key={a.id} className={cardClass}>
-          <p className="text-xs font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
-            {formatDay(a.created_at)}
-          </p>
-          <h3 className="mt-1 font-semibold tracking-tight">
-            {a.url ? (
-              <a
-                href={a.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="hover:underline"
-              >
-                {a.title}
-              </a>
-            ) : (
-              a.title
-            )}
-          </h3>
-          {a.body && (
-            <p className="mt-1.5 text-sm text-zinc-700 dark:text-zinc-300">
-              {a.body}
-            </p>
-          )}
-        </li>
-      ))}
-    </ul>
   );
 }
 
@@ -206,7 +113,7 @@ function DirectoryTab({
   return (
     <div className="grid gap-4">
       <form
-        action="/members"
+        action="/members#member-tabs"
         className="flex gap-2"
         aria-label="Search the member directory"
       >
@@ -227,9 +134,9 @@ function DirectoryTab({
       </form>
 
       {visible.length === 0 ? (
-        <EmptyState>
+        <p className="rounded-2xl border border-dashed border-zinc-300 p-6 text-sm text-zinc-600 dark:border-zinc-700 dark:text-zinc-400">
           {needle ? `No members match "${dq}".` : "No members yet."}
-        </EmptyState>
+        </p>
       ) : (
         <ul className="grid gap-3 sm:grid-cols-2">
           {visible.map((m) => (
@@ -266,48 +173,17 @@ function DirectoryTab({
   );
 }
 
-function ShowcaseTab({ items }: { items: ShowcasePost[] }) {
-  if (items.length === 0) {
-    return <EmptyState>No showcase posts yet.</EmptyState>;
-  }
-  return (
-    <ul className="grid gap-3 sm:grid-cols-2">
-      {items.map((p) => (
-        <li key={p.id} className={cardClass}>
-          <p className="text-xs font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
-            {formatDay(p.created_at)}
-            {p.member_name && ` · ${p.member_name}`}
-          </p>
-          <h3 className="mt-1 font-semibold tracking-tight">
-            {p.url ? (
-              <a
-                href={p.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="hover:underline"
-              >
-                {p.title}
-              </a>
-            ) : (
-              p.title
-            )}
-          </h3>
-          {p.description && (
-            <p className="mt-1.5 text-sm text-zinc-700 dark:text-zinc-300">
-              {p.description}
-            </p>
-          )}
-        </li>
-      ))}
-    </ul>
-  );
-}
-
 type Props =
-  | { tab: "recruiting"; recruiting: RecruitingPage }
-  | { tab: "whats-new"; announcements: Announcement[] }
+  | {
+      tab: "recruiting";
+      recruiting: RecruitingPage;
+      groups: ResourceGroup[];
+      q: string;
+      cat: string | null;
+    }
+  | { tab: "whats-new"; groups: ResourceGroup[]; q: string; cat: string | null }
   | { tab: "directory"; members: DirectoryMember[]; dq: string }
-  | { tab: "showcase"; posts: ShowcasePost[] };
+  | { tab: "showcase"; groups: ResourceGroup[]; q: string; cat: string | null };
 
 export function MemberTabs(props: Props) {
   return (
@@ -322,15 +198,34 @@ export function MemberTabs(props: Props) {
       <TabsNav active={props.tab} />
       <div className="mt-5">
         {props.tab === "recruiting" && (
-          <RecruitingTab page={props.recruiting} />
+          <RecruitingTab
+            dashboardUrl={props.recruiting.dashboardUrl}
+            groups={props.groups}
+            q={props.q}
+            cat={props.cat}
+          />
         )}
         {props.tab === "whats-new" && (
-          <WhatsNewTab items={props.announcements} />
+          <Browse
+            tab="whats-new"
+            groups={props.groups}
+            q={props.q}
+            cat={props.cat}
+            emptyMessage="No announcements yet. Add a category on /admin/categories (set its tab to What's new), then add resources to it on /admin/resources."
+          />
         )}
         {props.tab === "directory" && (
           <DirectoryTab members={props.members} dq={props.dq} />
         )}
-        {props.tab === "showcase" && <ShowcaseTab items={props.posts} />}
+        {props.tab === "showcase" && (
+          <Browse
+            tab="showcase"
+            groups={props.groups}
+            q={props.q}
+            cat={props.cat}
+            emptyMessage="No showcase posts yet. Add a category on /admin/categories (set its tab to AnderTech Showcase), then add resources to it on /admin/resources."
+          />
+        )}
       </div>
     </section>
   );
