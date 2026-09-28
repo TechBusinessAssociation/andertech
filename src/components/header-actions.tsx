@@ -7,16 +7,20 @@ import { signOutAction } from "@/lib/auth-actions";
 import { ThemeToggle } from "./theme-toggle";
 
 // Right side of the site header: Admin console (admins only), Home (signed-in
-// visitors only: a clear way back to the public landing page), a Members
-// dropdown (Members home + Sign out) once signed in, or a plain Sign in
-// link, and the light/dark switch. The server-rendered HTML is the
-// signed-out version, "Sign in", so pages stay statically rendered; the
-// browser then asks /api/me who is signed in and swaps in "Home", "Members"
-// and the Admin link where they apply. The page you are on is highlighted.
-// The dropdown is a plain <details>/<summary> (same pattern as the board
-// list) rather than a hand-rolled popup with click-outside/Escape handling
-// -- it's keyboard- and screen-reader-accessible for free and needs no
-// extra JavaScript.
+// visitors only: a clear way back to the public landing page), Members, a
+// small account menu (User profile + Sign out), or a plain Sign in link, and
+// the light/dark switch. Home and Members are both plain one-click links --
+// on purpose, so getting to either takes the same one click from anywhere,
+// including from /admin's own "Back to members" link. The account menu is a
+// separate, deliberately small icon-only control next to Members, so it
+// never adds a second click to reach the members page itself. The
+// server-rendered HTML is the signed-out version, "Sign in", so pages stay
+// statically rendered; the browser then asks /api/me who is signed in and
+// swaps in "Home", "Members" and the Admin link where they apply. The page
+// you are on is highlighted. The account menu is a plain <details>/
+// <summary> (same pattern as the board list) rather than a hand-rolled
+// popup with click-outside/Escape handling -- it's keyboard- and
+// screen-reader-accessible for free and needs no extra JavaScript.
 const pill =
   "inline-flex min-h-9 items-center gap-1.5 rounded-full border text-sm font-medium";
 const pillIdle = "border-zinc-300 text-zinc-800 hover:bg-zinc-100";
@@ -100,54 +104,53 @@ export function HeaderActions() {
         </Link>
       )}
       {status.signedIn ? (
-        <details className="group relative">
-          <summary
+        <>
+          <Link
+            href="/members"
             aria-current={onMembers ? "page" : undefined}
-            className={`${pill} cursor-pointer list-none px-3 sm:px-3.5 ${onMembers ? pillCurrent : pillIdle}`}
+            className={`${pill} px-3 sm:px-3.5 ${onMembers ? pillCurrent : pillIdle}`}
           >
             Members
-            <svg
-              viewBox="0 0 16 16"
-              className="hidden size-3.5 shrink-0 transition-transform sm:block group-open:rotate-180"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
+          </Link>
+          <details className="group relative">
+            <summary
+              aria-label="Account menu"
+              className={`${pill} min-w-9 cursor-pointer list-none justify-center px-2.5 ${pillIdle}`}
             >
-              <path d="M4 6.5 8 10l4-3.5" />
-            </svg>
-          </summary>
-          {/* Plain light styling like the rest of the header (see the
-              comment in header.tsx: the header stays on a fixed white
-              plate in both modes), not dark: variants. */}
-          <div className="absolute right-0 z-20 mt-2 w-44 overflow-hidden rounded-xl border border-zinc-200 bg-white py-1 shadow-lg">
-            <Link
-              href="/members"
-              className="block px-3.5 py-2 text-sm text-zinc-800 hover:bg-zinc-100"
-            >
-              Members home
-            </Link>
-            <Link
-              href="/members/profile"
-              className="block px-3.5 py-2 text-sm text-zinc-800 hover:bg-zinc-100"
-            >
-              User profile
-            </Link>
-            <form
-              action={signOutAction}
-              className="border-t border-zinc-200"
-            >
-              <button
-                type="submit"
-                className="block w-full px-3.5 py-2 text-left text-sm text-zinc-800 hover:bg-zinc-100"
+              <svg
+                viewBox="0 0 16 16"
+                className="size-3.5 shrink-0 transition-transform group-open:rotate-180"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
               >
-                Sign out
-              </button>
-            </form>
-          </div>
-        </details>
+                <path d="M4 6.5 8 10l4-3.5" />
+              </svg>
+            </summary>
+            {/* Plain light styling like the rest of the header (see the
+                comment in header.tsx: the header stays on a fixed white
+                plate in both modes), not dark: variants. */}
+            <div className="absolute right-0 z-20 mt-2 w-44 overflow-hidden rounded-xl border border-zinc-200 bg-white py-1 shadow-lg">
+              <Link
+                href="/members/profile"
+                className="block px-3.5 py-2 text-sm text-zinc-800 hover:bg-zinc-100"
+              >
+                User profile
+              </Link>
+              <form action={signOutAction}>
+                <button
+                  type="submit"
+                  className="block w-full px-3.5 py-2 text-left text-sm text-zinc-800 hover:bg-zinc-100"
+                >
+                  Sign out
+                </button>
+              </form>
+            </div>
+          </details>
+        </>
       ) : (
         <Link
           href="/sign-in"

@@ -133,9 +133,13 @@ export function Browse({
             <section
               key={group.name}
               aria-label={group.name}
-              className="grid content-start gap-3 rounded-2xl border border-zinc-200 bg-white p-[18px] shadow-sm dark:border-zinc-800 dark:bg-zinc-900"
+              className="grid content-start rounded-2xl border border-zinc-200 bg-white p-[18px] shadow-sm dark:border-zinc-800 dark:bg-zinc-900"
             >
-              <header className="flex items-center gap-3">
+              {/* A border + padding, not just a gap, so the title reads as
+                  its own row and doesn't blend into the resource list below
+                  (both rows otherwise have an icon + text, and could look
+                  like more of the same list at a glance). */}
+              <header className="flex items-center gap-3 border-b border-zinc-200 pb-3 dark:border-zinc-800">
                 <IconTile name={categoryIcon(group.name)} />
                 <div className="min-w-0">
                   <h3 className="text-[17px] font-semibold tracking-tight">
@@ -151,7 +155,7 @@ export function Browse({
                   {group.resources.length}
                 </span>
               </header>
-              <ul className="grid gap-0.5">
+              <ul className="grid gap-0.5 pt-2.5">
                 {group.resources.map((resource) => {
                   const kind = resourceKind(resource.url);
                   return (
