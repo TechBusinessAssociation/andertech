@@ -1,6 +1,7 @@
 import Link from "next/link";
-import { Icon } from "@/components/icons";
+import { Icon, IconTile } from "@/components/icons";
 import type { DirectoryMember, RecruitingPage, ResourceGroup } from "@/lib/members-db";
+import { resourceKind } from "@/lib/resource-kind";
 import { Browse } from "./browse";
 
 // Four sections above "Next up" on /members: Recruiting resources
@@ -71,6 +72,8 @@ function RecruitingTab({
   q: string;
   cat: string | null;
 }) {
+  const kind = dashboardUrl ? resourceKind(dashboardUrl) : null;
+
   return (
     <div className="grid gap-5">
       {dashboardUrl && (
@@ -90,6 +93,34 @@ function RecruitingTab({
         cat={cat}
         emptyMessage="Recruiting resources are coming soon. Add a category on /admin/categories (set its tab to Recruiting resources), then add resources to it on /admin/resources."
       />
+      {/* The dashboard link also shows here, as a plain resource row (same
+          style as every other resource) -- a fallback for anyone who can't
+          load the embed above, and a normal, findable link either way. Set
+          on /admin/recruiting, not a resource in the database. */}
+      {dashboardUrl && kind && (
+        <section
+          aria-label="Recruiting dashboard"
+          className="grid content-start gap-3 rounded-2xl border border-zinc-200 bg-white p-[18px] shadow-sm dark:border-zinc-800 dark:bg-zinc-900"
+        >
+          <a
+            href={dashboardUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="-mx-2 grid min-h-[52px] grid-cols-[auto_1fr_auto] items-center gap-3 rounded-[10px] px-2 py-2.5 hover:bg-brand-sky dark:hover:bg-white/5"
+          >
+            <IconTile name={kind.icon} size="sm" />
+            <span className="min-w-0">
+              <span className="block text-[14.5px] font-medium">
+                Recruiting dashboard
+              </span>
+              <span className="block text-[13px] text-zinc-600 dark:text-zinc-400">
+                {kind.label}
+              </span>
+            </span>
+            <Icon name="arrow" className="h-5 w-5 text-zinc-500" />
+          </a>
+        </section>
+      )}
     </div>
   );
 }
