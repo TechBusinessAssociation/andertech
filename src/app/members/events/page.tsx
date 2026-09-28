@@ -44,7 +44,7 @@ export default async function MemberEventsPage({ searchParams }: Props) {
             Upcoming events
           </h1>
           <p className="mt-3 max-w-[46ch] text-base text-brand-navy/75 md:text-[17px] dark:text-white/75">
-            Members-only. All times Pacific.
+            All times Pacific.
             {events.length > 0 && ` ${events.length} coming up.`}
           </p>
         </div>

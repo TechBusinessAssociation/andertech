@@ -53,12 +53,6 @@ export function Hero({
             >
               Upcoming events
             </Link>
-            <a
-              href="#browse"
-              className="inline-flex min-h-11 items-center rounded-[10px] border border-brand-blue/30 bg-white/60 px-[18px] text-sm font-semibold text-brand-navy hover:bg-white dark:border-white/20 dark:bg-white/10 dark:text-white dark:hover:bg-white/20"
-            >
-              Search resources
-            </a>
           </div>
         </div>
 
