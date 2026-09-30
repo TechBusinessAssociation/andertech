@@ -75,7 +75,13 @@ export function HeroBand({
   return (
     <section
       aria-labelledby={labelledBy}
-      className={`relative isolate bg-linear-to-br from-brand-sky via-white to-brand-cream text-brand-navy dark:from-[#12324f] dark:via-[#0d2136] dark:to-[#2a230f] dark:text-white ${className}`}
+      // z-10: without an explicit z-index, this section has no stacking
+      // order of its own, so a later sibling on the page (e.g. the
+      // featured-event card right after it on the home page) still paints
+      // over anything here that overflows the band's box -- like the
+      // "Become a member" dropdown opening past the bottom edge -- even
+      // though nothing is clipping it. An explicit z-index fixes that.
+      className={`relative isolate z-10 bg-linear-to-br from-brand-sky via-white to-brand-cream text-brand-navy dark:from-[#12324f] dark:via-[#0d2136] dark:to-[#2a230f] dark:text-white ${className}`}
     >
       {/* The globe is deliberately oversized and parked partly off the band,
           relying on a clip to crop it into the corner shape -- so that clip
