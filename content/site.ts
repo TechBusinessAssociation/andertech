@@ -9,7 +9,7 @@ export const site = {
   tagline:
     "The gateway to the tech industry for MBA candidates at UCLA Anderson.",
   description:
-    "AnderTech helps members launch or advance careers in tech and tech-driven industries through educational programming, networking, and career development.",
+    "AnderTech drives a strong agenda of career-building experiences throughout the MBA program, including Career Night, skill-based workshops, networking mixers, company treks, speaker panels and conferences. Whether you're making a pivot or building on past experience, AnderTech gives you the network, knowledge and support to move forward in tech.",
   // Use a club/shared inbox, never a personal address. null hides it.
   contactEmail:
     "tech.business.association@anderson.ucla.edu" as string | null,

@@ -4,7 +4,10 @@
 // SharePoint links, or anything that should be private.
 
 export const links = {
-  // Google Form: welcome survey, open to anyone with the link.
+  // Google Form: welcome survey, open to anyone with the link. Retired as
+  // the home page's "Join" CTA -- that's now the "Become a member" button
+  // (src/components/membership-cta.tsx, content/membership.ts), which pays
+  // dues through Crowded. Kept here for reference, not linked anywhere.
   joinSurvey:
     "https://docs.google.com/forms/d/e/1FAIpQLSf5tvekWCDfFcCoD5989n-Tgd4d4MAXD9mEjbU7sSMA6MmXeA/viewform" as string | null,
   // Public Google Calendar embed URL (Phase 1 calendar section). Get this
