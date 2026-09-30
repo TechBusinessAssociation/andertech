@@ -1,12 +1,15 @@
 import { HeroBand } from "@/components/hero-band";
 import { IconTile } from "@/components/icons";
+import { MembershipCta } from "@/components/membership-cta";
 import { site } from "../../content/site";
 
-// Landing page hero: club name, tagline, and the three things the club does.
-// Contact/social links live in the footer now (src/components/site-footer.tsx).
-// There is deliberately no "Join" button for now (links.joinSurvey stays in
-// content/links.ts, unused, for when it returns). All text comes from
-// /content so the board can edit it without touching code.
+// Landing page hero: club name, tagline, the three things the club does, and
+// the "Become a member" CTA (src/components/membership-cta.tsx) -- dues are
+// now paid through Crowded, which replaces the old "Join" Google Form button
+// (links.joinSurvey in content/links.ts is retired, kept only for reference).
+// Contact/social links live in the footer now
+// (src/components/site-footer.tsx). All text comes from /content so the
+// board can edit it without touching code.
 export function LandingHero() {
   return (
     <HeroBand labelledBy="home-heading">
@@ -32,6 +35,9 @@ export function LandingHero() {
             </p>
           )}
 
+          <div className="mt-6">
+            <MembershipCta />
+          </div>
         </div>
 
         {site.pillars.length > 0 && (

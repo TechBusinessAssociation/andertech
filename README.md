@@ -31,7 +31,7 @@ All editable text and links live in the `content/` folder. You do not need to to
 | Favicon (browser tab) | Replace `src/app/favicon.ico` |
 | Brand colors | `src/app/globals.css`, the `--color-brand-*` values |
 
-The **"Join AnderTech" button is hidden for now**: the landing page no longer shows it, but the welcome-survey link is still in `content/links.ts` (`joinSurvey`). To bring the button back, add it to `src/components/landing-hero.tsx`. The landing page's "Contact us" button and the members page's feedback email both use the club inbox in `content/site.ts` (`contactEmail`); feedback emails start with the subject prefix `feedbackSubject` ("AnderTech Website Feedback") so you can filter them in the inbox.
+The home page's **"Become a member" button** pays dues through **Crowded**. To turn on a membership term (or change its price/plan later), edit `content/membership.ts` and paste in that term's real Crowded checkout link -- a term with no link stays hidden, and if every term is blank the whole button hides itself. The old "Join AnderTech" welcome-survey link is retired but still in `content/links.ts` (`joinSurvey`) for reference. The landing page's "Contact us" button and the members page's feedback email both use the club inbox in `content/site.ts` (`contactEmail`); feedback emails start with the subject prefix `feedbackSubject` ("AnderTech Website Feedback") so you can filter them in the inbox.
 
 **Light and dark mode:** the button at the top right switches between them and remembers the choice on that device. Until someone picks, the site follows their device's setting. The header stays white in both modes so the logo stays readable.
 
