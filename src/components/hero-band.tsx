@@ -75,34 +75,44 @@ export function HeroBand({
   return (
     <section
       aria-labelledby={labelledBy}
-      className={`relative isolate overflow-hidden bg-linear-to-br from-brand-sky via-white to-brand-cream text-brand-navy dark:from-[#12324f] dark:via-[#0d2136] dark:to-[#2a230f] dark:text-white ${className}`}
+      className={`relative isolate bg-linear-to-br from-brand-sky via-white to-brand-cream text-brand-navy dark:from-[#12324f] dark:via-[#0d2136] dark:to-[#2a230f] dark:text-white ${className}`}
     >
-      {art === "large" ? (
-        // Square, taller than the band, parked with its left 40% on screen:
-        // `left-full` puts its left edge at the band's right edge, and the
-        // -40% shift pulls 40% of its width back in. Smaller on phones.
-        <svg
-          viewBox="170 20 260 260"
-          preserveAspectRatio="xMidYMid meet"
-          aria-hidden="true"
-          className="pointer-events-none absolute left-full top-1/2 -z-10 aspect-square h-[70%] -translate-x-[40%] -translate-y-1/2 text-brand-blue/30 md:h-[112%] dark:text-[#7dbbec]/30"
-        >
-          <Globe />
-        </svg>
-      ) : (
-        // Centered on the band's bottom-right corner (`left-full top-full`
-        // pulled back by half its own size), so the band shows the globe's
-        // top-left quarter. Sized by width on phones (a small corner piece)
-        // and by the band's height from tablet width up.
-        <svg
-          viewBox="170 20 260 260"
-          preserveAspectRatio="xMidYMid meet"
-          aria-hidden="true"
-          className="pointer-events-none absolute left-full top-full -z-10 aspect-square w-[95vw] -translate-x-1/2 -translate-y-1/2 text-brand-blue/30 md:h-[185%] md:w-auto dark:text-[#7dbbec]/30"
-        >
-          <Globe />
-        </svg>
-      )}
+      {/* The globe is deliberately oversized and parked partly off the band,
+          relying on a clip to crop it into the corner shape -- so that clip
+          lives on this wrapper alone, not on the section itself. Content
+          (children) can then overflow the band's box without being cut off,
+          e.g. a dropdown menu that opens past the band's bottom edge. */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 -z-10 overflow-hidden"
+      >
+        {art === "large" ? (
+          // Square, taller than the band, parked with its left 40% on
+          // screen: `left-full` puts its left edge at the band's right
+          // edge, and the -40% shift pulls 40% of its width back in.
+          // Smaller on phones.
+          <svg
+            viewBox="170 20 260 260"
+            preserveAspectRatio="xMidYMid meet"
+            className="absolute left-full top-1/2 aspect-square h-[70%] -translate-x-[40%] -translate-y-1/2 text-brand-blue/30 md:h-[112%] dark:text-[#7dbbec]/30"
+          >
+            <Globe />
+          </svg>
+        ) : (
+          // Centered on the band's bottom-right corner (`left-full
+          // top-full` pulled back by half its own size), so the band shows
+          // the globe's top-left quarter. Sized by width on phones (a
+          // small corner piece) and by the band's height from tablet width
+          // up.
+          <svg
+            viewBox="170 20 260 260"
+            preserveAspectRatio="xMidYMid meet"
+            className="absolute left-full top-full aspect-square w-[95vw] -translate-x-1/2 -translate-y-1/2 text-brand-blue/30 md:h-[185%] md:w-auto dark:text-[#7dbbec]/30"
+          >
+            <Globe />
+          </svg>
+        )}
+      </div>
       {children}
     </section>
   );
