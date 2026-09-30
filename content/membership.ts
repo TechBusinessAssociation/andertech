@@ -11,9 +11,21 @@
 // member" button on the home page hides itself.
 export const membership = {
   terms: [
-    { label: "1 year", url: null as string | null },
-    { label: "2 years", url: null as string | null },
-    { label: "3 years", url: null as string | null },
-    { label: "1.5 years (MSBA / MFE / MQE)", url: null as string | null },
+    {
+      label: "1 year",
+      url: "https://collect.bankingcrowded.com/collection/505d49e4-afb2-4552-bf02-826859f4b181" as string | null,
+    },
+    {
+      label: "2 years",
+      url: "https://collect.bankingcrowded.com/collection/9817d8c9-f48c-4a0f-ac39-c6a27c02a55a" as string | null,
+    },
+    {
+      label: "3 years",
+      url: "https://collect.bankingcrowded.com/collection/f4332a13-0650-4ee9-b86a-09df61c8de12" as string | null,
+    },
+    {
+      label: "1.5 years (MSBA / MFE / MQE)",
+      url: "https://collect.bankingcrowded.com/collection/142ad376-6263-437f-9fcb-2660508ef502" as string | null,
+    },
   ],
 };
