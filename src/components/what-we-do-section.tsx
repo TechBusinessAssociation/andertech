@@ -66,13 +66,13 @@ export function WhatWeDoSection() {
       className="chapters-grid overflow-x-clip"
     >
       <div className="mx-auto max-w-5xl px-5 py-12 md:py-20">
-        <div className="max-w-2xl">
+        <div>
           <div className="reveal [--r1:18%]">
             <Label>{programsIntro.label}</Label>
           </div>
           <h2
             id="what-we-do-heading"
-            className="reveal mt-5 text-4xl font-semibold leading-[1.05] tracking-tight text-balance md:text-5xl [--r0:4%] [--r1:24%]"
+            className="reveal mt-5 text-4xl font-semibold leading-[1.05] tracking-tight text-balance [--r0:4%] [--r1:24%]"
           >
             {programsIntro.heading}
           </h2>
