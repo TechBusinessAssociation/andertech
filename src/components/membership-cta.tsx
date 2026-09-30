@@ -28,22 +28,28 @@ export function MembershipCta() {
           <path d="M4 6.5 8 10l4-3.5" />
         </svg>
       </summary>
-      <div className="absolute left-0 z-20 mt-2 w-64 overflow-hidden rounded-xl border border-zinc-200 bg-white py-1 shadow-lg dark:border-zinc-700 dark:bg-zinc-900">
-        {terms.map((term) => (
-          <a
-            key={term.label}
-            href={term.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="block px-3.5 py-2 text-sm text-zinc-800 hover:bg-zinc-100 dark:text-zinc-100 dark:hover:bg-zinc-800"
-          >
-            {term.label}
-          </a>
-        ))}
+      {/* mt-1.5, and the same border/shadow as the summary's own focus
+          ring, so the panel reads as part of the button rather than a
+          second, separate floating box. */}
+      <div className="absolute left-0 z-20 mt-1.5 w-72 overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-lg dark:border-zinc-700 dark:bg-zinc-900">
+        <p className="border-b border-zinc-200 px-3.5 py-2 text-xs text-zinc-500 dark:border-zinc-700 dark:text-zinc-400">
+          Checkout is handled securely through Crowded and opens in a new
+          tab.
+        </p>
+        <div className="py-1">
+          {terms.map((term) => (
+            <a
+              key={term.label}
+              href={term.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block px-3.5 py-2 text-sm text-zinc-800 hover:bg-zinc-100 dark:text-zinc-100 dark:hover:bg-zinc-800"
+            >
+              {term.label}
+            </a>
+          ))}
+        </div>
       </div>
-      <p className="mt-2 max-w-[38ch] text-xs text-brand-navy/60 dark:text-white/60">
-        Checkout is handled securely through Crowded and opens in a new tab.
-      </p>
     </details>
   );
 }
