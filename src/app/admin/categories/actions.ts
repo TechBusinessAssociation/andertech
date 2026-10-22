@@ -24,7 +24,7 @@ export async function saveCategoryAction(formData: FormData) {
   const description = String(formData.get("description") ?? "");
   const sortOrder = toInt(formData.get("sort_order"));
   const rawSection = String(formData.get("section") ?? "");
-  const section = isSection(rawSection) ? rawSection : "recruiting";
+  const section = isSection(rawSection) && rawSection !== "showcase" ? rawSection : "recruiting";
   const rawId = formData.get("id");
 
   if (!name.trim()) {

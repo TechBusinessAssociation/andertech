@@ -70,7 +70,10 @@ export const chapters: Chapter[] = [
         blurb: "The Tech + Society Conference with the Easton Technology Management Center each fall, and the annual Emerging Tech Conference with the Entrepreneur Association each spring.",
       },
     ],
-    photo: null,
+    photo: {
+      src: "/photos/educational.webp",
+      alt: "A packed lecture hall applauding a speaker who joins by video call on the big screen, with a moderator seated on stage beside it",
+    },
   },
   {
     id: "networking-opportunities",

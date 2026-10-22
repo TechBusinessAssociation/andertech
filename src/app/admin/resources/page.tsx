@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { getAdminResources, getCategories } from "@/lib/members-db";
 import { requireAdmin } from "@/lib/require-admin";
-import { SECTIONS, SECTION_LABELS } from "@/lib/tab-sections";
+import { ADMIN_SECTIONS, SECTION_LABELS } from "@/lib/tab-sections";
 import { removeResourceAction, saveResourceAction } from "./actions";
 import {
   Badge,
@@ -134,7 +134,7 @@ export default async function AdminResourcesPage({ searchParams }: Props) {
                   <option value="" disabled>
                     Choose a category
                   </option>
-                  {SECTIONS.map((section) => {
+                  {ADMIN_SECTIONS.map((section) => {
                     const inSection = categories.filter(
                       (c) => c.section === section,
                     );

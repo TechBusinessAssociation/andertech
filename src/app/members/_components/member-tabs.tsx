@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Icon } from "@/components/icons";
 import type { DirectoryMember, RecruitingPage, ResourceGroup } from "@/lib/members-db";
+import type { ShowcaseProject } from "@/lib/showcase-db";
 import { CategoryCards } from "./category-cards";
 
 // Four sections above "Next up" on /members: Recruiting resources
@@ -10,12 +11,13 @@ import { CategoryCards } from "./category-cards";
 // active tab's data is ever fetched (see members/page.tsx's loadTab) -- the
 // other three tabs' queries never run on a given load.
 //
-// Recruiting resources, What's new and AnderTech Showcase are all built the
-// same way: categories + resources, pre-filtered to that tab's section
+// Recruiting resources and What's new are built the same way: categories + resources, pre-filtered to that tab's section
 // (see schema.sql's comment on categories.section) and shown as category
 // cards (<CategoryCards>) -- click a card to see its resources on their own
 // page (/members/categories/[id]). Member Directory is its own thing --
-// every approved member, automatically, not a category of links.
+// every approved member, automatically, not a category of links. AnderTech
+// Showcase is too: projects members post themselves from
+// /members/profile/projects, shown as an expandable list.
 
 export const TABS = [
   { key: "recruiting", label: "Recruiting resources" },
@@ -175,11 +177,79 @@ function DirectoryTab({
   );
 }
 
+// One row per project: title and author on the summary line, and clicking it
+// expands the description underneath. A plain <details>/<summary> (no JS, same
+// pattern as the header menu). The external link is a separate box-and-arrow
+// button pinned to the row's right edge, outside the <summary>, so it works
+// straight away without expanding and never fights the row's own click.
+// Descriptions render as plain text (whitespace kept), never as HTML.
+function ShowcaseTab({ projects }: { projects: ShowcaseProject[] }) {
+  if (projects.length === 0) {
+    return (
+      <p className="rounded-2xl border border-dashed border-zinc-300 p-6 text-sm text-zinc-600 dark:border-zinc-700 dark:text-zinc-400">
+        No projects yet. Be the first: add one from{" "}
+        <Link href="/members/profile/projects" className="underline">
+          your profile
+        </Link>
+        .
+      </p>
+    );
+  }
+
+  return (
+    <div className="grid gap-4">
+      <p className="text-sm text-zinc-600 dark:text-zinc-400">
+        Projects from AnderTech members. Click a row to read more, or the arrow to open it.{" "}
+        <Link href="/members/profile/projects" className="underline">
+          Share yours
+        </Link>
+        .
+      </p>
+      <ul className="divide-y divide-zinc-200 rounded-2xl border border-zinc-200 bg-white dark:divide-zinc-800 dark:border-zinc-800 dark:bg-zinc-900">
+        {projects.map((p) => (
+          <li key={p.id} className="relative">
+            <a
+              href={p.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={`Open ${p.title} in a new tab`}
+              className="absolute right-3 top-2.5 z-10 inline-flex size-11 items-center justify-center rounded-lg border border-zinc-200 text-brand-navy hover:border-brand-blue hover:bg-zinc-50 dark:border-zinc-700 dark:text-brand-gold dark:hover:bg-zinc-800"
+            >
+              <Icon name="external" className="size-5" />
+            </a>
+            <details className="group">
+              <summary className="flex min-h-14 cursor-pointer list-none items-center justify-between gap-3 py-3 pl-4 pr-16 marker:hidden [&::-webkit-details-marker]:hidden">
+                <span className="min-w-0">
+                  <span className="block font-medium">{p.title}</span>
+                  <span className="block text-sm text-zinc-600 dark:text-zinc-400">
+                    {p.authorName}
+                  </span>
+                </span>
+                <span
+                  aria-hidden="true"
+                  className="shrink-0 text-zinc-500 transition-transform group-open:rotate-180"
+                >
+                  &#9662;
+                </span>
+              </summary>
+              <div className="px-4 pb-4 pr-16">
+                <p className="whitespace-pre-line text-[15px] text-zinc-700 dark:text-zinc-300">
+                  {p.description || "No description added."}
+                </p>
+              </div>
+            </details>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
 type Props =
   | { tab: "recruiting"; recruiting: RecruitingPage; groups: ResourceGroup[] }
   | { tab: "whats-new"; groups: ResourceGroup[] }
   | { tab: "directory"; members: DirectoryMember[]; dq: string }
-  | { tab: "showcase"; groups: ResourceGroup[] };
+  | { tab: "showcase"; projects: ShowcaseProject[] };
 
 export function MemberTabs(props: Props) {
   return (
@@ -209,10 +279,7 @@ export function MemberTabs(props: Props) {
           <DirectoryTab members={props.members} dq={props.dq} />
         )}
         {props.tab === "showcase" && (
-          <CategoryCards
-            groups={props.groups}
-            emptyMessage="No showcase posts yet. Add a category on /admin/categories (set its tab to AnderTech Showcase), then add resources to it on /admin/resources."
-          />
+          <ShowcaseTab projects={props.projects} />
         )}
       </div>
     </section>
