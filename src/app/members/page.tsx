@@ -9,6 +9,7 @@ import {
   getUpcomingEvents,
   isApprovedMember,
 } from "@/lib/members-db";
+import { getShowcaseProjects } from "@/lib/showcase-db";
 import { site } from "../../../content/site";
 import { FooterCards } from "./_components/footer-cards";
 import { Hero } from "./_components/hero";
@@ -21,7 +22,7 @@ type Props = {
 };
 
 // Only the active tab's data is ever fetched -- the other three tabs' DB
-// queries never run on a given page load. Recruiting/What's new/Showcase
+// queries never run on a given page load. Recruiting/What's new
 // each get their own categories + resources, pre-filtered by section
 // (getResourceGroups); a category card links straight to its own page
 // (/members/categories/[id]) rather than expanding inline, so there's no
@@ -30,8 +31,9 @@ async function loadTab(tab: TabKey, dq: string) {
   switch (tab) {
     case "directory":
       return { tab, members: await getDirectoryMembers(), dq } as const;
-    case "whats-new":
     case "showcase":
+      return { tab, projects: await getShowcaseProjects() } as const;
+    case "whats-new":
       return { tab, groups: await getResourceGroups(tab) } as const;
     case "recruiting":
     default: {

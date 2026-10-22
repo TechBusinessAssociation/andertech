@@ -11,6 +11,11 @@ export const SECTION_LABELS: Record<Section, string> = {
   showcase: "AnderTech Showcase",
 };
 
+// The sections an admin can file a category under. Showcase is left out: it
+// lists member-posted projects now (see src/lib/showcase-db.ts), not categories.
+// It stays in SECTIONS only because the database check still allows it.
+export const ADMIN_SECTIONS = SECTIONS.filter((s) => s !== "showcase");
+
 export function isSection(value: string): value is Section {
   return (SECTIONS as readonly string[]).includes(value);
 }

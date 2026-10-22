@@ -8,6 +8,7 @@ export type IconName =
   | "folder"
   | "link"
   | "arrow"
+  | "external"
   | "search"
   | "cap"
   | "brief"

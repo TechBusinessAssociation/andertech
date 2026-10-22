@@ -123,6 +123,20 @@ export default async function ProfilePage({ searchParams }: Props) {
             Save
           </button>
         </form>
+
+        <section className="mt-10 border-t border-zinc-200 pt-6 dark:border-zinc-800">
+          <h2 className="text-xl font-semibold">Showcase projects</h2>
+          <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+            Share a portfolio or something you built on the AnderTech Showcase
+            tab.
+          </p>
+          <Link
+            href="/members/profile/projects"
+            className="mt-3 inline-flex min-h-11 items-center rounded-full border border-zinc-300 px-5 text-sm font-semibold hover:bg-zinc-50 dark:border-zinc-700 dark:hover:bg-zinc-800"
+          >
+            Manage your projects
+          </Link>
+        </section>
       </div>
     </main>
   );

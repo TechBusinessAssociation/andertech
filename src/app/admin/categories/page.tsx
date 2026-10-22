@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { getCategoriesWithCounts } from "@/lib/members-db";
 import { requireAdmin } from "@/lib/require-admin";
-import { SECTIONS, SECTION_LABELS } from "@/lib/tab-sections";
+import { ADMIN_SECTIONS, SECTION_LABELS } from "@/lib/tab-sections";
 import { removeCategoryAction, saveCategoryAction } from "./actions";
 import {
   Badge,
@@ -96,7 +96,7 @@ export default async function AdminCategoriesPage({ searchParams }: Props) {
               defaultValue={editing?.section ?? "recruiting"}
               className={`${inputClass} font-normal`}
             >
-              {SECTIONS.map((section) => (
+              {ADMIN_SECTIONS.map((section) => (
                 <option key={section} value={section}>
                   {SECTION_LABELS[section]}
                 </option>

@@ -149,3 +149,34 @@ create table if not exists recruiting_page (
 );
 
 insert into recruiting_page (id) values (1) on conflict (id) do nothing;
+
+-- --- Member showcase projects (AnderTech Showcase tab on /members) ---
+-- Members post their own projects (title, an external link, a short
+-- description) from /members/profile/projects; they show on the Showcase tab
+-- as an expandable list. Projects go live immediately -- only approved
+-- members can post, and a member can edit or delete their own.
+--
+-- members.id is a stable, never-changing identifier, so rows that belong to a
+-- member can point at it instead of at their email address. It is additive:
+-- email is still members' primary key and how sign-in finds a member, and
+-- member_roles still points at email. Existing members are backfilled with a
+-- random id by the `add column` (a volatile default is evaluated per row).
+-- Safe to re-run.
+
+alter table members add column if not exists id uuid not null default gen_random_uuid();
+create unique index if not exists members_id_key on members (id);
+
+-- Limits (title <= 100 characters, description <= 250 words, 10 projects per
+-- member) are enforced in the app, src/lib/showcase.ts; the character caps
+-- below are only a backstop against a direct write. Deleting a member
+-- deletes their projects with them.
+create table if not exists showcase_projects (
+  id bigserial primary key,
+  member_id uuid not null references members(id) on delete cascade,
+  title text not null check (char_length(title) <= 100),
+  url text not null,
+  description text not null default '' check (char_length(description) <= 2500),
+  created_at timestamptz not null default now()
+);
+
+create index if not exists showcase_projects_member_idx on showcase_projects (member_id);
