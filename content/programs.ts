@@ -67,7 +67,7 @@ export const chapters: Chapter[] = [
       },
       {
         title: "Flagship conferences",
-        blurb: "The Tech + Society Conference with the Easton Technology Management Center each fall, and the annual Emerging Tech Conference with the Entrepreneur Association each spring.",
+        blurb: "The Tech + Society Conference each fall and the Innovate Tech Conference each winter, both with the Easton Technology Management Center, and the annual Emerging Tech Conference with the Entrepreneur Association each spring.",
       },
     ],
     photo: {

@@ -1,19 +1,57 @@
+"use client";
+
+import { useEffect, useRef } from "react";
 import { membership } from "../../content/membership";
 
 // "Become a member" on the home page: a plain <details>/<summary> dropdown
 // (same pattern as the header's account menu) rather than a <select> that
 // needs JavaScript to navigate on change -- this works without JS, and each
-// term is just a link to its own Crowded checkout page. Hides itself
-// entirely if no term has a URL set yet (content/membership.ts).
-export function MembershipCta() {
+// term is just a link to its own Crowded checkout page. It still opens and
+// closes without JS; a small effect below adds the usual extras (click
+// outside, or Escape, closes it). Hides itself entirely if no term has a URL
+// set yet (content/membership.ts).
+export function MembershipCta({
+  variant = "default",
+}: {
+  // "hero" is the gold pill used on the landing hero's navy band.
+  variant?: "default" | "hero";
+}) {
   const terms = membership.terms.filter(
     (term): term is { label: string; url: string } => Boolean(term.url),
   );
+  const menu = useRef<HTMLDetailsElement>(null);
+
+  // Close on a click/tap outside the menu, or on Escape (focus goes back to
+  // the button so keyboard users don't lose their place).
+  useEffect(() => {
+    const el = menu.current;
+    if (!el) return;
+    const onPointerDown = (event: PointerEvent) => {
+      if (el.open && !el.contains(event.target as Node)) el.open = false;
+    };
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape" && el.open) {
+        el.open = false;
+        el.querySelector("summary")?.focus();
+      }
+    };
+    document.addEventListener("pointerdown", onPointerDown);
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("pointerdown", onPointerDown);
+      document.removeEventListener("keydown", onKeyDown);
+    };
+  }, [terms.length]);
+
   if (terms.length === 0) return null;
 
   return (
-    <details className="group relative inline-block">
-      <summary className="inline-flex min-h-11 cursor-pointer list-none items-center gap-1.5 rounded-[10px] bg-brand-navy px-[18px] text-sm font-semibold text-white hover:bg-brand-blue dark:bg-brand-gold dark:text-brand-navy dark:hover:brightness-105">
+    <details ref={menu} className="group relative inline-block">
+      <summary className={
+          variant === "hero"
+            ? "inline-flex min-h-12 cursor-pointer list-none items-center gap-2.5 rounded-full bg-brand-gold px-6 text-[15px] font-semibold text-brand-navy hover:brightness-105"
+            : "inline-flex min-h-11 cursor-pointer list-none items-center gap-1.5 rounded-[10px] bg-brand-navy px-[18px] text-sm font-semibold text-white hover:bg-brand-blue dark:bg-brand-gold dark:text-brand-navy dark:hover:brightness-105"
+        }>
         Become a member
         <svg
           viewBox="0 0 16 16"

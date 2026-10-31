@@ -10,7 +10,7 @@ the app** — no page imports or links to these files, and they are not in
   (see root `CLAUDE.md` → Rule 5).
 - The logo and favicon actually used on the site are **derived from
   `web-asset-kit-mockup.png`** — cropped, given a transparent background,
-  and saved separately as `public/brand/logo.png` (header) and
+  and saved separately as `public/brand/logo-2026.png` (header) and
   `src/app/favicon.ico` (browser tab). Edit or replace those files to
   change the live logo; editing the files in this folder does nothing.
 - The brand color palette (blue/gold/navy/sky/cream) was sampled from the
@@ -18,7 +18,7 @@ the app** — no page imports or links to these files, and they are not in
   tokens, in `src/app/globals.css` (`--color-brand-*`).
 - Both mockups are AI-generated compositions, not vector source files.
   If a cleaner source (SVG/AI/Figma export, or a proper transparent PNG)
-  becomes available, replace `public/brand/logo.png` and
+  becomes available, replace `public/brand/logo-2026.png` and
   `src/app/favicon.ico` directly — that's the only change needed; nothing
   else in the app references this folder.
 - `hero-mockup.png` (full hero layout, with a UCLA Anderson building photo)

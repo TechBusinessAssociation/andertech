@@ -1,18 +1,29 @@
 import Link from "next/link";
+import { SectionLabel } from "@/components/home/ui";
 import { links } from "../../content/links";
 
-// Embeds the public Google Calendar from content/links.ts. The board edits
-// events in Google Calendar itself, not here -- this just displays it.
-// A null calendarEmbed renders a placeholder instead of a broken embed, and
-// points members at the members-only events page.
+// The events slot under the conferences on the home page. Embeds the public
+// Google Calendar from content/links.ts; the board edits events in Google
+// Calendar itself, not here. A null calendarEmbed renders a placeholder
+// instead of a broken embed, and points members at the members-only events
+// page. It reads no database, so the home page stays static.
 export function EventsSection() {
   return (
-    <section aria-labelledby="events-heading" className="py-10 md:py-14">
-      <div className="mb-3.5">
-        <h2 id="events-heading" className="text-xl font-semibold tracking-tight md:text-2xl">
-          Events
-        </h2>
-        <p className="text-sm text-zinc-600 dark:text-zinc-400">
+    <div
+      id="events"
+      aria-labelledby="events-heading"
+      role="region"
+      className="mt-6 grid scroll-mt-16 gap-6 rounded-3xl bg-white p-6 md:grid-cols-[5fr_7fr] md:items-center md:gap-10 md:rounded-[32px] md:p-11 dark:bg-zinc-900"
+    >
+      <div>
+        <SectionLabel>Events calendar</SectionLabel>
+        <h3
+          id="events-heading"
+          className="mt-3 max-w-[14ch] font-display text-[28px] font-bold leading-[1.05] tracking-[-0.035em] md:text-[32px]"
+        >
+          Everything coming up, in one place.
+        </h3>
+        <p className="mt-3 text-sm text-brand-navy/70 dark:text-white/70">
           Workshops, panels and mixers across the year.
         </p>
       </div>
@@ -41,6 +52,6 @@ export function EventsSection() {
           </Link>
         </div>
       )}
-    </section>
+    </div>
   );
 }

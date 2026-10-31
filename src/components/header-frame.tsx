@@ -7,9 +7,12 @@ import { usePathname } from "next/navigation";
 // It reads the URL, not the session, so pages stay statically rendered.
 export function HeaderFrame({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  // The landing page uses the wider 1200px column, so its header does too.
   const width = pathname.startsWith("/admin")
     ? "max-w-6xl px-4 md:px-6"
-    : "max-w-5xl px-5";
+    : pathname === "/"
+      ? "max-w-[1200px] px-5 md:px-10"
+      : "max-w-5xl px-5";
 
   return (
     <div className={`mx-auto flex items-center justify-between gap-2 py-3 ${width}`}>
