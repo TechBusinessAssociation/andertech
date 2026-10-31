@@ -39,9 +39,9 @@ export const site = {
     },
   ] as { title: string; blurb: string; icon: "cap" | "people" | "chart" | "brief" | "folder" }[],
   // Logo shown in the header. To swap the logo image itself, just replace
-  // public/brand/logo.png with a same-named file -- every place that uses
+  // public/brand/logo-2026.png with a same-named file -- every place that uses
   // <Logo /> (src/components/logo.tsx) picks it up automatically. To use a
   // different file name/path instead, change it here.
-  logo: "/brand/logo.png",
+  logo: "/brand/logo-2026.png",
   logoAlt: "AnderTech (Tech Business Association at Anderson) logo",
 };

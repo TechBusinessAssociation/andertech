@@ -23,7 +23,7 @@ export function Header() {
     <header className="sticky top-0 z-20 border-b border-zinc-200 bg-white">
       <HeaderFrame>
         <Link href="/" aria-label={site.name} className="shrink-0">
-          <Logo className="h-7 w-auto min-[380px]:h-8 sm:h-9" />
+          <Logo className="h-8 w-auto min-[380px]:h-9 sm:h-11" />
         </Link>
 
         <HeaderActions />

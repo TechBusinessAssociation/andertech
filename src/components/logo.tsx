@@ -9,8 +9,8 @@ export function Logo({ className }: { className?: string }) {
     <Image
       src={site.logo}
       alt={site.logoAlt}
-      width={692}
-      height={180}
+      width={901}
+      height={274}
       priority
       className={className}
     />

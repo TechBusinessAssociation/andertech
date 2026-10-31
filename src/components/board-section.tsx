@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { SectionLabel } from "@/components/home/ui";
 import { board, boardPhoto } from "../../content/board";
 
 // The board: the group photo, then everyone in one collapsed list. Every
@@ -13,19 +14,18 @@ export function BoardSection() {
     <section
       id="board"
       aria-labelledby="board-heading"
-      className="pt-14 md:pt-20"
+      className="py-16 md:py-[120px]"
     >
       <div className="reveal [--r1:18%]">
-        <p className="flex items-center gap-3.5 text-xs font-semibold uppercase tracking-[0.16em]">
-          <span aria-hidden="true" className="size-2 shrink-0 rounded-full bg-brand-gold" />
-          <span>The board</span>
-        </p>
+        <SectionLabel>The board</SectionLabel>
       </div>
       <h2
         id="board-heading"
-        className="reveal mt-5 max-w-2xl text-4xl font-semibold leading-[1.05] tracking-tight text-balance md:text-5xl [--r0:4%] [--r1:24%]"
+        className="reveal mt-5 max-w-[18ch] font-display text-4xl font-bold leading-none tracking-[-0.035em] text-balance md:text-6xl [--r0:4%] [--r1:24%]"
       >
-        The people running AnderTech.
+        {board.length > 0
+          ? `${board.length} students run this club.`
+          : "The people running AnderTech."}
       </h2>
 
       {board.length === 0 ? (
@@ -35,8 +35,8 @@ export function BoardSection() {
       ) : (
         <>
           <p className="reveal mt-3 max-w-[60ch] text-lg leading-snug text-balance text-zinc-600 dark:text-zinc-400 [--r0:6%] [--r1:26%]">
-            {board.length} students this year, across recruiting, learning,
-            community, alumni and operations.
+            Across recruiting, learning, community, alumni and operations.
+            Everyone is listed the same way, in roster order.
           </p>
 
           {boardPhoto && (

@@ -24,6 +24,8 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  /* Landing-page headline face, loaded in src/components/home/ui.tsx. */
+  --font-display: var(--font-bricolage), var(--font-geist-sans), system-ui, sans-serif;
 
   /* Brand palette, sampled from the confirmed logo/asset-kit mockup in
      design-reference/. Change a value here and every bg-brand-*,
@@ -33,6 +35,8 @@
   --color-brand-navy: #0f2b46;
   --color-brand-sky: #eaf4fb;
   --color-brand-cream: #fff6df;
+  /* Brand navy darkened, for the deep band behind "A year in the club". */
+  --color-brand-deep: #091825;
 }
 
 body {
@@ -185,5 +189,103 @@ body {
   .flip:hover .flip-front,
   .flip:focus-visible .flip-front {
     opacity: 0;
+  }
+}
+
+/* Landing "What we do" pillars (src/components/home/pillars-section.tsx):
+   three hidden radio buttons pick which panel is shown, using :has() -- no
+   JavaScript. The picked card turns navy (gold in dark mode); only the picked
+   panel is displayed, and the card of the radio with keyboard focus gets a
+   ring. */
+.pillars .pillar-panel {
+  display: none;
+}
+.pillars .pillar-num {
+  color: var(--color-brand-blue);
+}
+.pillars .pillar-blurb {
+  color: rgb(15 43 70 / 0.7);
+}
+.dark .pillars .pillar-num {
+  color: #9cc6ea;
+}
+.dark .pillars .pillar-blurb {
+  color: rgb(255 255 255 / 0.7);
+}
+.pillars .pillar-tab {
+  transition:
+    background-color 0.18s,
+    color 0.18s,
+    border-color 0.18s;
+}
+.pillars .pillar-tab:hover {
+  border-color: var(--color-brand-navy);
+}
+.dark .pillars .pillar-tab:hover {
+  border-color: #fff;
+}
+.pillars:has(#pillar-0:checked) .pillar-panel-0,
+.pillars:has(#pillar-1:checked) .pillar-panel-1,
+.pillars:has(#pillar-2:checked) .pillar-panel-2 {
+  display: block;
+}
+.pillars:has(#pillar-0:checked) label[for="pillar-0"],
+.pillars:has(#pillar-1:checked) label[for="pillar-1"],
+.pillars:has(#pillar-2:checked) label[for="pillar-2"] {
+  background: var(--color-brand-navy);
+  border-color: var(--color-brand-navy);
+  color: #fff;
+}
+.dark .pillars:has(#pillar-0:checked) label[for="pillar-0"],
+.dark .pillars:has(#pillar-1:checked) label[for="pillar-1"],
+.dark .pillars:has(#pillar-2:checked) label[for="pillar-2"] {
+  background: rgb(255 255 255 / 0.1);
+  border-color: var(--color-brand-gold);
+}
+.pillars:has(#pillar-0:checked) label[for="pillar-0"] .pillar-num,
+.pillars:has(#pillar-1:checked) label[for="pillar-1"] .pillar-num,
+.pillars:has(#pillar-2:checked) label[for="pillar-2"] .pillar-num {
+  color: var(--color-brand-gold);
+}
+.pillars:has(#pillar-0:checked) label[for="pillar-0"] .pillar-blurb,
+.pillars:has(#pillar-1:checked) label[for="pillar-1"] .pillar-blurb,
+.pillars:has(#pillar-2:checked) label[for="pillar-2"] .pillar-blurb {
+  color: rgb(255 255 255 / 0.78);
+}
+.pillars:has(#pillar-0:focus-visible) label[for="pillar-0"],
+.pillars:has(#pillar-1:focus-visible) label[for="pillar-1"],
+.pillars:has(#pillar-2:focus-visible) label[for="pillar-2"] {
+  outline: 2px solid var(--color-brand-blue);
+  outline-offset: 2px;
+}
+
+/* "A year in the club" (src/components/home/year-section.tsx): on wide
+   screens each photo flies in from the edge it sits nearest, out of depth,
+   and settles flush. Pure CSS scroll-driven animation, so the page stays
+   static; browsers without it (and reduced-motion) show everything in place.
+   --dx/--dy/--a0/--a1 are set per photo in the component. The `animation`
+   shorthand resets `animation-timeline`, so the timeline comes after it. */
+@media (min-width: 1280px) and (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: view()) {
+    @keyframes year-fly {
+      from {
+        transform: translate3d(var(--dx), var(--dy), -380px);
+        opacity: 0;
+      }
+      to {
+        transform: translate3d(0, 0, 0);
+        opacity: 1;
+      }
+    }
+    .year-stage {
+      perspective: 1200px;
+      perspective-origin: 50% 40%;
+      view-timeline: --fly block;
+    }
+    .year-tile {
+      animation: year-fly linear both;
+      animation-timeline: --fly;
+      animation-range: cover var(--a0) cover var(--a1);
+    }
   }
 }
