@@ -14,6 +14,7 @@ export function PillarsSection() {
   return (
     <section
       id="what-we-do"
+      data-section="what-we-do"
       aria-labelledby="pillars-heading"
       className="scroll-mt-16 py-16 md:py-[120px]"
     >
@@ -44,6 +45,8 @@ export function PillarsSection() {
                 <label
                   key={chapter.id}
                   htmlFor={`pillar-${i}`}
+                  data-umami-event="pillar-select"
+                  data-umami-event-pillar={chapter.label}
                   className="pillar-tab block cursor-pointer rounded-[22px] border-[1.5px] border-brand-navy/15 p-5 md:px-[26px] md:pb-[26px] md:pt-6 dark:border-white/20"
                 >
                   <span className="pillar-num block font-mono text-xs font-medium uppercase tracking-[0.14em]">

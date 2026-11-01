@@ -38,6 +38,14 @@ export const site = {
       icon: "chart",
     },
   ] as { title: string; blurb: string; icon: "cap" | "people" | "chart" | "brief" | "folder" }[],
+  // Page analytics: Umami Cloud (cookie-free), public pages only. The website
+  // ID is not a secret (it is visible in the page source); the Umami login is
+  // not in this repo -- it is in the club's password manager. Set the ID to
+  // null to switch tracking off. See README.md ("Analytics").
+  analytics: {
+    umamiWebsiteId: "1f310c3b-e6bb-4529-9d51-d5ad976860db" as string | null,
+    umamiScriptUrl: "https://cloud.umami.is/script.js",
+  },
   // Logo shown in the header. To swap the logo image itself, just replace
   // public/brand/logo-2026.png with a same-named file -- every place that uses
   // <Logo /> (src/components/logo.tsx) picks it up automatically. To use a

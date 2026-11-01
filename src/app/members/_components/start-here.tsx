@@ -25,6 +25,10 @@ export function StartHere({ resources }: { resources: MemberResource[] }) {
             <li key={resource.id}>
               <a
                 href={resource.url}
+                data-umami-event="resource-click"
+                data-umami-event-resource={resource.label}
+                data-umami-event-category={resource.category_name}
+                data-umami-event-from="start-here"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="grid h-full content-start gap-2.5 rounded-2xl border border-zinc-200 bg-white p-[18px] shadow-sm transition hover:-translate-y-0.5 hover:border-brand-blue motion-reduce:transition-none motion-reduce:hover:translate-y-0 dark:border-zinc-800 dark:bg-zinc-900"

@@ -159,6 +159,7 @@ function DirectoryTab({
                   {m.linkedinUrl && (
                     <a
                       href={m.linkedinUrl}
+                      data-umami-event="directory-linkedin-click"
                       target="_blank"
                       rel="noopener noreferrer"
                       aria-label={`${name}'s LinkedIn`}
@@ -210,6 +211,7 @@ function ShowcaseTab({ projects }: { projects: ShowcaseProject[] }) {
           <li key={p.id} className="relative">
             <a
               href={p.url}
+              data-umami-event="showcase-open"
               target="_blank"
               rel="noopener noreferrer"
               aria-label={`Open ${p.title} in a new tab`}

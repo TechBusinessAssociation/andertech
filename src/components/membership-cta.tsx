@@ -47,7 +47,9 @@ export function MembershipCta({
 
   return (
     <details ref={menu} className="group relative inline-block">
-      <summary className={
+      <summary
+        data-umami-event="become-a-member-click"
+        className={
           variant === "hero"
             ? "inline-flex min-h-12 cursor-pointer list-none items-center gap-2.5 rounded-full bg-brand-gold px-6 text-[15px] font-semibold text-brand-navy hover:brightness-105"
             : "inline-flex min-h-11 cursor-pointer list-none items-center gap-1.5 rounded-[10px] bg-brand-navy px-[18px] text-sm font-semibold text-white hover:bg-brand-blue dark:bg-brand-gold dark:text-brand-navy dark:hover:brightness-105"
@@ -74,6 +76,9 @@ export function MembershipCta({
           <a
             key={term.label}
             href={term.url}
+            data-umami-event="payment-link-click"
+            data-umami-event-term={term.label}
+            data-umami-event-from="hero-menu"
             target="_blank"
             rel="noopener noreferrer"
             className="block px-3.5 py-2 text-sm text-zinc-800 hover:bg-zinc-100 dark:text-zinc-100 dark:hover:bg-zinc-800"

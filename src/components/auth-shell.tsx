@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Analytics } from "@/components/analytics";
 import { HeroBand } from "@/components/hero-band";
 
 // Shared frame for the sign-in and request-access pages: the Airy band with a
@@ -12,6 +13,7 @@ export function AuthShell({
 }) {
   return (
     <main className="flex flex-1 flex-col">
+      <Analytics />
       <HeroBand
         labelledBy={labelledBy}
         className="flex flex-1 items-center"

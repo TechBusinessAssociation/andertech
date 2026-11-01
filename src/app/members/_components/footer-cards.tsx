@@ -29,6 +29,7 @@ export function FooterCards({
         {mailto && (
           <a
             href={mailto}
+            data-umami-event="feedback-click"
             className="inline-flex min-h-11 shrink-0 items-center rounded-[10px] border border-brand-navy/15 bg-white px-[18px] text-sm font-semibold text-brand-navy hover:bg-brand-sky dark:border-white/15 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800"
           >
             Send feedback by email

@@ -24,7 +24,7 @@ export function SiteFooter() {
   const activeSocials = socialLinks.filter((link) => link.href);
 
   return (
-    <footer className="bg-brand-navy pb-10 pt-14 text-white md:pt-[88px]">
+    <footer data-section="footer" className="bg-brand-navy pb-10 pt-14 text-white md:pt-[88px]">
       <Wrap>
         <div className="grid gap-10 sm:grid-cols-2 md:grid-cols-[6fr_2fr_2fr_2fr]">
           <div className="sm:col-span-2 md:col-span-1">
@@ -73,12 +73,22 @@ export function SiteFooter() {
             <h2 className={columnHeading}>Members</h2>
             <ul className="grid gap-2.5">
               <li>
-                <Link href="/sign-in" className={linkClass}>
+                <Link
+                  href="/sign-in"
+                  data-umami-event="sign-in-click"
+                  data-umami-event-from="footer"
+                  className={linkClass}
+                >
                   Sign in
                 </Link>
               </li>
               <li>
-                <Link href="/request-access" className={linkClass}>
+                <Link
+                  href="/request-access"
+                  data-umami-event="request-access-click"
+                  data-umami-event-from="footer"
+                  className={linkClass}
+                >
                   Request access
                 </Link>
               </li>

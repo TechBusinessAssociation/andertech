@@ -12,6 +12,7 @@ export function HomeHero() {
   return (
     <section
       id="top"
+      data-section="hero"
       aria-labelledby="home-heading"
       className="relative bg-brand-navy text-white"
     >
