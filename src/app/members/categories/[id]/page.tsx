@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { Icon, IconTile } from "@/components/icons";
+import { TrackEvent } from "@/components/track-event";
 import { getCategoryDetail, isApprovedMember } from "@/lib/members-db";
 import { categoryIcon, resourceKind } from "@/lib/resource-kind";
 import { SECTION_LABELS } from "@/lib/tab-sections";
@@ -34,6 +35,10 @@ export default async function CategoryPage({ params }: Props) {
 
   return (
     <main className="flex-1">
+      <TrackEvent
+        name="category-view"
+        data={{ category: category.name, section: category.section }}
+      />
       <div className="mx-auto max-w-2xl px-5 py-8 md:py-12">
         <Link
           href={backHref}
@@ -68,6 +73,10 @@ export default async function CategoryPage({ params }: Props) {
                 <li key={resource.id}>
                   <a
                     href={resource.url}
+                    data-umami-event="resource-click"
+                    data-umami-event-resource={resource.label}
+                    data-umami-event-category={category.name}
+                    data-umami-event-from="category-page"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="grid min-h-[52px] grid-cols-[auto_1fr_auto] items-center gap-3 rounded-[10px] px-2 py-2.5 hover:bg-brand-sky dark:hover:bg-white/5"

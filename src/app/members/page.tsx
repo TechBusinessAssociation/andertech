@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
+import { TrackEvent } from "@/components/track-event";
 import {
   getDirectoryMembers,
   getFeaturedResources,
@@ -80,6 +81,8 @@ export default async function MembersPage({ searchParams }: Props) {
 
   return (
     <main className="flex-1">
+      <TrackEvent name="members-tab-view" data={{ tab }} />
+      {tab === "directory" && dq && <TrackEvent name="directory-search" />}
       <Hero firstName={firstName} next={events[0] ?? null} />
 
       <div className="mx-auto max-w-5xl px-5 pb-10">

@@ -1,10 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-
-type UmamiWindow = Window & {
-  umami?: { track: (name: string, data?: Record<string, string>) => void };
-};
+import { trackEvent } from "@/lib/umami";
 
 // Tells analytics when a landing-page section scrolls into view, once per
 // section per visit, so the dashboard shows how far down the page people get
@@ -24,8 +21,7 @@ export function SectionReach() {
           const el = entry.target as HTMLElement;
           const name = el.dataset.section;
           if (!entry.isIntersecting || !name || seen.has(name)) continue;
-          const umami = (window as UmamiWindow).umami;
-          if (!umami) {
+          if (!trackEvent("section-view", { section: name })) {
             // The analytics script may still be loading (the hero is in view
             // at once): look again in a second, a few times at most, so an
             // ad-blocked visit doesn't keep retrying.
@@ -38,7 +34,6 @@ export function SectionReach() {
             continue;
           }
           seen.add(name);
-          umami.track("section-view", { section: name });
           observer.unobserve(el);
         }
       },
