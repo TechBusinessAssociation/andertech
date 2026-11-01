@@ -154,6 +154,8 @@ export function HeaderActions() {
       ) : (
         <Link
           href="/sign-in"
+          data-umami-event="sign-in-click"
+          data-umami-event-from="header"
           className={`${pill} px-3 sm:px-3.5 ${pillIdle}`}
         >
           Sign in

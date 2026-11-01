@@ -26,6 +26,7 @@ export function YearSection() {
   return (
     <section
       aria-labelledby="year-heading"
+      data-section="year-in-the-club"
       className="relative isolate bg-brand-deep py-16 text-white [clip-path:inset(0)] md:py-24"
     >
       <div

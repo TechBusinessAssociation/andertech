@@ -16,6 +16,7 @@ export function MembersSection() {
   return (
     <section
       id="members"
+      data-section="members"
       aria-labelledby="members-heading"
       className="scroll-mt-16 bg-brand-cream py-16 md:py-[120px] dark:bg-[#33290f]"
     >
@@ -39,6 +40,9 @@ export function MembersSection() {
                   <li key={term.label}>
                     <a
                       href={term.url}
+                      data-umami-event="payment-link-click"
+                      data-umami-event-term={term.label}
+                      data-umami-event-from="members-section"
                       target="_blank"
                       rel="noopener noreferrer"
                       className="inline-flex min-h-11 items-center rounded-full border-[1.5px] border-brand-navy/20 bg-white px-[18px] text-[15px] font-medium text-brand-navy hover:border-brand-navy hover:bg-brand-navy hover:text-white dark:border-white/20 dark:bg-zinc-900 dark:text-white dark:hover:bg-white dark:hover:text-brand-navy"
@@ -54,12 +58,16 @@ export function MembersSection() {
           <div className="mt-8 flex flex-wrap gap-3">
             <Link
               href="/sign-in"
+              data-umami-event="sign-in-click"
+              data-umami-event-from="members-section"
               className="inline-flex min-h-12 items-center justify-center rounded-full bg-brand-navy px-6 text-[15px] font-semibold text-white hover:bg-brand-blue dark:bg-brand-gold dark:text-brand-navy dark:hover:brightness-105"
             >
               Sign in
             </Link>
             <Link
               href="/request-access"
+              data-umami-event="request-access-click"
+              data-umami-event-from="members-section"
               className="inline-flex min-h-12 items-center justify-center rounded-full border-[1.5px] border-brand-navy/25 bg-white px-6 text-[15px] font-semibold text-brand-navy hover:border-brand-navy dark:border-white/25 dark:bg-transparent dark:text-white dark:hover:border-white"
             >
               Request access

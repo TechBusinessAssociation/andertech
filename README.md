@@ -44,6 +44,17 @@ A link set to `null` is hidden or disabled on the site. Only add a board member'
 3. Commit, push, and open a pull request into `main`. Do not push to `main` directly.
 4. Merging to `main` redeploys the live site automatically.
 
+## Analytics (Umami)
+
+Visits to the public pages (home, sign in, request access) are counted with **Umami Cloud**, a free, cookie-free tool, so no consent banner is needed. It never runs on `/members` or `/admin`, on local development, or on Vercel preview deployments, only on the live site, and it respects the browser's "Do Not Track" setting.
+
+- **Dashboard:** cloud.umami.is (the login is in the club's shared password manager, never in this repo). The website ID in `content/site.ts` (`analytics.umamiWebsiteId`) is not a secret. Set it to `null` to switch tracking off.
+- **What is counted:** page views and daily unique visitors, plus these events (shown under **Events** in Umami): `become-a-member-click`, `payment-link-click` (with the dues term and where the link was), `sign-in-click` and `request-access-click` (with where they were clicked), `pillar-select` (which "What we do" card), and `section-view` (which home-page section was scrolled to, so you can see where people stop).
+- **Club fair QR code:** point it at the home page with `?utm_source=clubfair` on the end, so Umami shows how many visitors came from the fair.
+- **Adding a click event:** put `data-umami-event="name"` on a link or button (plus optional `data-umami-event-something="value"`). No code needed.
+- Payment clicks are only clicks. Actual payments are in Crowded.
+- The free plan allows 100,000 events a month and keeps 6 months of data; check Umami's pricing page once a year in case it changes.
+
 ## Members area (login)
 
 `/members` requires signing in with Google, checked against an approved-member list. `/admin` is the same, plus an extra check (see below). Nothing about day-to-day use of either involves editing code.
@@ -91,6 +102,7 @@ Important about resource links: **that list is a convenience directory, not real
 | Members-only resources | Files live in Google Drive (or SharePoint) with restricted sharing. `/members` shows a directory of links grouped by category (edited on `/admin`), not the files themselves. |
 | Members-only events | Vercel Postgres (`events` table), edited on `/admin`, shown on `/members/events`. The public calendar above is separate. |
 | Membership list | Vercel Postgres, edited via `/admin`. Not in this repo -- see "Members area" above. |
+| Analytics | Umami Cloud (cloud.umami.is); website ID in `content/site.ts`. See "Analytics" above. |
 | Domain | Not set up yet. Using the free `*.vercel.app` address. |
 
 Account logins and passwords belong in the club's shared password manager, not in this repo.

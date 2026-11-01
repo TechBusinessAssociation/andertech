@@ -8,6 +8,7 @@ export function ConferencesSection() {
   return (
     <section
       id="conferences"
+      data-section="conferences"
       aria-labelledby="conferences-heading"
       className="scroll-mt-16 bg-brand-sky py-16 md:py-[120px] dark:bg-white/[0.04]"
     >

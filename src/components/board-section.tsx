@@ -13,6 +13,7 @@ export function BoardSection() {
   return (
     <section
       id="board"
+      data-section="board"
       aria-labelledby="board-heading"
       className="py-16 md:py-[120px]"
     >
