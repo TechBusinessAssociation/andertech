@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { StoryEnd } from "@/components/newsletter/story-end";
 import { RichText } from "@/components/rich-text";
 import type { NewsletterItem } from "@/lib/newsletter-db";
 
@@ -32,10 +33,15 @@ export function IssueView({
   issue,
   items,
   meta,
+  trackReading = false,
 }: {
   issue: { title: string; publishedOn: string; intro: string; closing: string };
   items: NewsletterItem[];
   meta?: ReactNode;
+  // Only the public page sets this: it adds an invisible end-of-story marker
+  // that reports how far readers get (see story-end.tsx). The admin preview
+  // leaves it off.
+  trackReading?: boolean;
 }) {
   return (
     <div className="text-zinc-800 dark:text-zinc-300">
@@ -110,6 +116,9 @@ export function IssueView({
                 to read it.
               </p>
             ))}
+          {trackReading && (
+            <StoryEnd issue={issue.publishedOn} story={index + 1} />
+          )}
         </article>
       ))}
 

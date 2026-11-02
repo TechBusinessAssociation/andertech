@@ -73,6 +73,7 @@ export default async function NewsletterPage({ searchParams }: Props) {
             <IssueView
               issue={issue}
               items={items}
+              trackReading
               meta={
                 hasArchive && (
                   <details className="relative">
