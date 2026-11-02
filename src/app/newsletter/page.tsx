@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { auth } from "@/auth";
 import { Analytics } from "@/components/analytics";
@@ -8,8 +9,31 @@ import { SiteFooter } from "@/components/site-footer";
 import { isApprovedMember } from "@/lib/members-db";
 import { getIssueItems, getPublishedIssues } from "@/lib/newsletter-db";
 import { newsletter } from "../../../content/newsletter";
+import { site } from "../../../content/site";
 
-export const metadata = { title: "Newsletter" };
+// The preview card (Slack, iMessage...) for a shared /newsletter link. A page
+// that sets openGraph replaces the layout's whole openGraph, so the image is
+// repeated here.
+export const metadata: Metadata = {
+  title: "Newsletter",
+  description: newsletter.tagline,
+  openGraph: {
+    type: "website",
+    siteName: site.name,
+    title: newsletter.name,
+    description: newsletter.tagline,
+    url: "/newsletter",
+    images: [
+      { url: site.shareImage, width: 1200, height: 630, alt: site.shareImageAlt },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: newsletter.name,
+    description: newsletter.tagline,
+    images: [site.shareImage],
+  },
+};
 
 // Public page. It reads the session only to decide whether to include the
 // Editor's take: the take is fetched from the database only for approved

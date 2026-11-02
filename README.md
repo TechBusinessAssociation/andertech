@@ -28,6 +28,7 @@ All editable text and links live in the `content/` folder. You do not need to to
 | The "Coming up" featured event card on the home page | `content/featured-event.ts` (title, date, agenda, optional RSVP link). It stays until you change it: after the event, replace the content or set `featuredEvent` to `null`. |
 | "What we do" chapters on the home page (copy, programs, photos) | `content/programs.ts`. To add a photo, put the image in `public/photos/` (about 1600px wide, under ~400 KB) and set the chapter's `photo` to `{ src: "/photos/name.jpg", alt: "what it shows" }`. Until a chapter has a photo it shows a numbered panel. Only use photos of people who agreed to appear. |
 | Logo (header) | Replace `public/brand/logo-2026.png`, or add a new file and change the path in `content/site.ts`. Use a new file name when you change the picture: browsers cache the old file under the old name |
+| Link preview picture (Slack, iMessage, LinkedIn) | `public/brand/share-card.png` (1200x630), set in `content/site.ts` (`shareImage`). To change it, save the new picture under a NEW file name and update that path: apps cache the old picture under the old name. The web address used for previews is `site.url` in the same file. After a change, Slack can take a while to refresh an old preview; adding `?v=2` to the shared link shows the new one at once. |
 | Favicon (browser tab) | Replace `src/app/favicon.ico` |
 | Brand colors | `src/app/globals.css`, the `--color-brand-*` values |
 
