@@ -7,6 +7,7 @@ import {
   getTags,
 } from "@/lib/newsletter-db";
 import {
+  FORMAT_HINT,
   MAX_ALT,
   MAX_BODY,
   MAX_TAG_LENGTH,
@@ -93,6 +94,9 @@ export default async function AdminIssuePage({ params, searchParams }: Props) {
             {issue.published ? "Unpublish" : "Publish"}
           </button>
         </form>
+        <Link href={`${here}/preview`} className={linkClass}>
+          Preview
+        </Link>
         {issue.published && (
           <Link href="/newsletter" className={linkClass}>
             View public page
@@ -174,6 +178,9 @@ export default async function AdminIssuePage({ params, searchParams }: Props) {
         >
           <input type="hidden" name="issue_id" value={issue.id} />
           {editing && <input type="hidden" name="id" value={editing.id} />}
+          <p className="text-xs text-zinc-600 dark:text-zinc-400">
+            {FORMAT_HINT} Works in the body and the Editor&apos;s take.
+          </p>
           <label className={fieldLabelClass}>
             Title
             <input

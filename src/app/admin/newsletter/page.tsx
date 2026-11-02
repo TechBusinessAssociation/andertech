@@ -1,6 +1,11 @@
 import Link from "next/link";
 import { getAdminIssues } from "@/lib/newsletter-db";
-import { MAX_CLOSING, MAX_INTRO, MAX_ISSUE_TITLE } from "@/lib/newsletter";
+import {
+  FORMAT_HINT,
+  MAX_CLOSING,
+  MAX_INTRO,
+  MAX_ISSUE_TITLE,
+} from "@/lib/newsletter";
 import { requireNewsletterAdmin } from "@/lib/require-admin";
 import {
   removeIssueAction,
@@ -91,6 +96,9 @@ export default async function AdminNewsletterPage({ searchParams }: Props) {
               />
             </label>
           </div>
+          <p className="text-xs text-zinc-600 dark:text-zinc-400">
+            {FORMAT_HINT}
+          </p>
           <label className={fieldLabelClass}>
             Intro (optional, shown under the title, above the items)
             <textarea
@@ -171,6 +179,12 @@ export default async function AdminNewsletterPage({ searchParams }: Props) {
                         className={`${linkClass} text-sm`}
                       >
                         Items
+                      </Link>
+                      <Link
+                        href={`${SECTION}/issues/${issue.id}/preview`}
+                        className={`${linkClass} text-sm`}
+                      >
+                        Preview
                       </Link>
                       <Link
                         href={`${SECTION}?edit=${issue.id}#issue-form`}
