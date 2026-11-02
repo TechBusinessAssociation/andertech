@@ -61,9 +61,13 @@ export async function getPublishedIssues(): Promise<PublicIssue[]> {
 }
 
 // One published issue's items, in the order the editor ranked them.
+//
+// `includeDraft` is for the admin preview only: it lets an unpublished issue's
+// items through. The public page never sets it.
 export async function getIssueItems(
   issueId: number,
   includeTake: boolean,
+  includeDraft = false,
 ): Promise<NewsletterItem[]> {
   try {
     const { rows } = await sql`
@@ -77,7 +81,8 @@ export async function getIssueItems(
                '{}'
              ) as tags
       from newsletter_items i
-      join newsletter_issues n on n.id = i.issue_id and n.published
+      join newsletter_issues n
+        on n.id = i.issue_id and (n.published or ${includeDraft})
       left join newsletter_item_tags it on it.item_id = i.id
       left join newsletter_tags t on t.id = it.tag_id
       where i.issue_id = ${issueId}

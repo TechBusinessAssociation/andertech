@@ -17,6 +17,10 @@ export const MAX_ALT = 200;
 export const MAX_IMAGE_BYTES = 2 * 1024 * 1024;
 export const IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
 
+// Shown on the admin forms; the renderer is src/components/rich-text.tsx.
+export const FORMAT_HINT =
+  "Formatting: [link text](https://address) makes a link (a bare https:// address works too), **bold** makes bold, start lines with - or 1. for lists, and a blank line starts a new paragraph.";
+
 const DATE = /^\d{4}-\d{2}-\d{2}$/;
 
 export type IssueInput = {
