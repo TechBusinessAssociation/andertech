@@ -25,3 +25,14 @@ export async function isAdmin(
   if (isEnvAdminEmail(email)) return true;
   return await hasRole(email, "admin");
 }
+
+// May this email edit the newsletter (/admin/newsletter)? Yes for anyone who
+// is a full admin (an admin always has the newsletter editor's access too, so
+// it is not stored as a second role), or a member holding 'newsletter_admin'.
+// That role opens ONLY the newsletter section of /admin. Fails closed.
+export async function isNewsletterAdmin(
+  email: string | null | undefined,
+): Promise<boolean> {
+  if (await isAdmin(email)) return true;
+  return await hasRole(email, "newsletter_admin");
+}

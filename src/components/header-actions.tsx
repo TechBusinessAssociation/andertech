@@ -28,7 +28,11 @@ const pillCurrent = "border-brand-blue bg-brand-sky text-brand-navy";
 
 export function HeaderActions() {
   const pathname = usePathname();
-  const [status, setStatus] = useState({ signedIn: false, admin: false });
+  const [status, setStatus] = useState({
+    signedIn: false,
+    admin: false,
+    newsletterAdmin: false,
+  });
 
   // Re-check on every navigation so the links update after signing in or out.
   useEffect(() => {
@@ -40,11 +44,13 @@ export function HeaderActions() {
           setStatus({
             signedIn: data?.signedIn === true,
             admin: data?.admin === true,
+            newsletterAdmin: data?.newsletterAdmin === true,
           });
         }
       })
       .catch(() => {
-        if (!cancelled) setStatus({ signedIn: false, admin: false });
+        if (!cancelled)
+          setStatus({ signedIn: false, admin: false, newsletterAdmin: false });
       });
     return () => {
       cancelled = true;
@@ -56,7 +62,7 @@ export function HeaderActions() {
 
   return (
     <div className="flex items-center gap-1 sm:gap-3">
-      {status.admin && (
+      {(status.admin || status.newsletterAdmin) && (
         <Link
           href="/admin"
           aria-label="Admin console"
@@ -161,6 +167,15 @@ export function HeaderActions() {
           Sign in
         </Link>
       )}
+      <Link
+        href="/newsletter"
+        aria-current={pathname.startsWith("/newsletter") ? "page" : undefined}
+        className={`${pill} hidden px-3.5 sm:inline-flex ${
+          pathname.startsWith("/newsletter") ? pillCurrent : pillIdle
+        }`}
+      >
+        Newsletter
+      </Link>
       <ThemeToggle />
     </div>
   );
