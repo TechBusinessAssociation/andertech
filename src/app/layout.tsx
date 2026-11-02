@@ -14,9 +14,30 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+// openGraph/twitter are what Slack, iMessage, LinkedIn etc. read to draw the
+// preview card when someone shares a link. metadataBase turns the image path
+// into the full address those apps need. Pages that set their own title (like
+// /newsletter) keep this image.
 export const metadata: Metadata = {
+  metadataBase: new URL(site.url),
   title: site.name,
   description: site.tagline,
+  openGraph: {
+    type: "website",
+    siteName: site.name,
+    title: site.name,
+    description: site.tagline,
+    url: "/",
+    images: [
+      { url: site.shareImage, width: 1200, height: 630, alt: site.shareImageAlt },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: site.name,
+    description: site.tagline,
+    images: [site.shareImage],
+  },
 };
 
 // Runs before first paint so the page never flashes the wrong theme: use the

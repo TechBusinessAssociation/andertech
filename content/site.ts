@@ -52,4 +52,11 @@ export const site = {
   // different file name/path instead, change it here.
   logo: "/brand/logo-2026.png",
   logoAlt: "AnderTech (Tech Business Association at Anderson) logo",
+  // The public web address, used for link previews (Slack, iMessage, LinkedIn).
+  url: "https://andertech.org",
+  // The picture shown in those previews: 1200x630 PNG in public/brand/. To
+  // change it, replace the file with a NEW file name and update the path here
+  // (apps cache the old picture under the old name).
+  shareImage: "/brand/share-card.png",
+  shareImageAlt: "AnderTech: Tech Business Association at Anderson",
 };
