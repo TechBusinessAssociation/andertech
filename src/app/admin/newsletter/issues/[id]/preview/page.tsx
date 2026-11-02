@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { displayFont } from "@/components/home/ui";
 import { IssueView } from "@/components/newsletter/issue-view";
 import { getAdminIssue, getIssueItems } from "@/lib/newsletter-db";
 import { requireNewsletterAdmin } from "@/lib/require-admin";
@@ -41,7 +42,8 @@ export default async function AdminIssuePreviewPage({ params }: Props) {
         </Link>
       </div>
 
-      <div className="mx-auto flex w-full max-w-3xl flex-col gap-10">
+      {/* Same 680px reading column as /newsletter. */}
+      <div className={`${displayFont.variable} mx-auto w-full max-w-[680px]`}>
         <IssueView issue={issue} items={items} />
       </div>
     </div>
