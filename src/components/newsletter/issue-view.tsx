@@ -1,14 +1,21 @@
 import Image from "next/image";
 import Link from "next/link";
+import type { ReactNode } from "react";
 import { RichText } from "@/components/rich-text";
 import type { NewsletterItem } from "@/lib/newsletter-db";
 
-// One issue as readers see it: title and date, intro, the ranked items, then
+// One issue as readers see it: date, title and intro, the ranked items, then
 // the closing. Shared by the public /newsletter page and the admin preview, so
 // what an editor previews is what gets published. It only draws what it is
 // given: the caller decides whether Editor's takes were fetched at all (see
-// getIssueItems), and an item with a take that wasn't fetched shows the
-// "sign in to read" lock instead.
+// getIssueItems), and an item with a take that wasn't fetched shows a one-line
+// "sign in to read" note instead.
+//
+// The look is deliberately plain, like a Medium or Substack post: one reading
+// column (the caller sets its 680px width), body text at 19px, no boxes. The
+// display face is used only for the issue title; gold appears only as the
+// Editor's take rule. `meta` is an optional slot beside the date (the public
+// page puts the "All issues" menu there).
 export function formatIssueDate(ymd: string): string {
   return new Date(`${ymd}T00:00:00Z`).toLocaleDateString("en-US", {
     month: "long",
@@ -18,84 +25,90 @@ export function formatIssueDate(ymd: string): string {
   });
 }
 
+const bodyText = "text-[19px] leading-[1.75]";
+const muted = "text-zinc-500 dark:text-zinc-400";
+
 export function IssueView({
   issue,
   items,
+  meta,
 }: {
   issue: { title: string; publishedOn: string; intro: string; closing: string };
   items: NewsletterItem[];
+  meta?: ReactNode;
 }) {
   return (
-    <>
-      <header className="flex flex-col gap-1 border-b border-zinc-200 pb-6 dark:border-zinc-800">
-        <p className="font-mono text-xs uppercase tracking-[0.14em] text-zinc-600 dark:text-zinc-400">
-          {formatIssueDate(issue.publishedOn)}
-        </p>
-        <h2 className="text-3xl font-semibold tracking-tight text-balance">
+    <div className="text-zinc-800 dark:text-zinc-300">
+      <header>
+        <div className={`flex flex-wrap items-center gap-x-3.5 gap-y-1 text-sm ${muted}`}>
+          <span>{formatIssueDate(issue.publishedOn)}</span>
+          {meta}
+        </div>
+        <h2 className="mt-3 font-display text-[2rem] font-bold leading-[1.1] tracking-[-0.035em] text-balance text-brand-navy md:text-[2.6rem] dark:text-white">
           {issue.title}
         </h2>
         <RichText
           text={issue.intro}
-          className="mt-3 text-[17px] leading-relaxed"
+          className={`mt-3.5 text-xl leading-normal ${muted}`}
         />
       </header>
 
-      {items.map((item) => (
-        <article
-          key={item.id}
-          className="flex flex-col gap-4 border-b border-zinc-200 pb-10 last:border-b-0 dark:border-zinc-800"
-        >
+      {items.map((item, index) => (
+        <article key={item.id} className="pt-12">
+          {/* A short centered rule between stories, not before the first. */}
+          {index > 0 && (
+            <hr className="mx-auto mb-12 w-12 border-zinc-200 dark:border-zinc-800" />
+          )}
+          {/* Rank and tags on one quiet line, e.g. "1 · Recruiting, Big tech". */}
+          <p className={`mb-1.5 text-sm ${muted}`}>
+            <span className="sr-only">Story </span>
+            {index + 1}
+            {item.tags.length > 0 && (
+              <>
+                {" "}&middot; <span className="sr-only">Tags: </span>
+                {item.tags.join(", ")}
+              </>
+            )}
+          </p>
+          <h3 className="mb-[18px] text-2xl font-semibold leading-snug tracking-[-0.015em] text-balance text-brand-navy dark:text-white">
+            {item.title}
+          </h3>
           {item.imageUrl && (
             <Image
               src={item.imageUrl}
               alt={item.imageAlt}
               width={1600}
               height={900}
-              sizes="(min-width: 768px) 48rem, 100vw"
-              className="h-auto w-full rounded-xl"
+              sizes="(min-width: 712px) 680px, 100vw"
+              className="mb-[26px] h-auto w-full rounded"
             />
           )}
-          <div className="flex flex-col gap-2">
-            <h3 className="text-2xl font-semibold tracking-tight text-balance">
-              {item.title}
-            </h3>
-            {item.tags.length > 0 && (
-              <ul className="flex flex-wrap gap-1.5" aria-label="Tags">
-                {item.tags.map((tag) => (
-                  <li
-                    key={tag}
-                    className="rounded-full bg-zinc-100 px-2.5 py-0.5 text-xs font-medium text-zinc-800 dark:bg-zinc-800 dark:text-zinc-100"
-                  >
-                    {tag}
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-          <RichText text={item.body} className="text-[17px] leading-relaxed" />
+          <RichText text={item.body} className={bodyText} />
 
           {item.hasTake &&
             (item.editorsTake !== null ? (
-              <aside className="rounded-xl border border-brand-blue/40 bg-brand-sky/40 p-4 dark:border-brand-blue/50 dark:bg-brand-navy/40">
-                <h4 className="text-sm font-semibold uppercase tracking-wide text-brand-navy dark:text-white">
+              <aside
+                aria-label="Editor's take"
+                className="mt-6 border-l-[3px] border-brand-gold py-0.5 pl-[18px] text-lg leading-[1.7]"
+              >
+                <p className="font-semibold text-brand-navy dark:text-white">
                   Editor&apos;s take
-                </h4>
-                <RichText text={item.editorsTake} className="mt-2 leading-relaxed" />
+                </p>
+                <RichText text={item.editorsTake} />
               </aside>
             ) : (
-              <aside className="rounded-xl border border-dashed border-zinc-300 p-4 text-sm text-zinc-700 dark:border-zinc-700 dark:text-zinc-300">
-                <span className="font-semibold">Editor&apos;s take</span> is for
-                members.{" "}
+              <p className={`mt-6 border-l-[3px] border-brand-gold pl-3 ${muted}`}>
+                The Editor&apos;s take is for members.{" "}
                 <Link
                   href="/sign-in"
                   data-umami-event="sign-in-click"
                   data-umami-event-from="newsletter"
-                  className="text-brand-navy underline hover:text-brand-blue dark:text-brand-blue"
+                  className="text-brand-navy underline underline-offset-[3px] hover:text-brand-blue dark:text-[#9cc6ea]"
                 >
                   Sign in
                 </Link>{" "}
                 to read it.
-              </aside>
+              </p>
             ))}
         </article>
       ))}
@@ -103,9 +116,9 @@ export function IssueView({
       {issue.closing.trim() && (
         <RichText
           text={issue.closing}
-          className="border-t border-zinc-200 pt-8 text-[17px] leading-relaxed dark:border-zinc-800"
+          className={`mt-14 border-t border-zinc-200 pt-7 dark:border-zinc-800 ${bodyText}`}
         />
       )}
-    </>
+    </div>
   );
 }
