@@ -73,6 +73,11 @@ export function SiteFooter() {
             <h2 className={columnHeading}>Members</h2>
             <ul className="grid gap-2.5">
               <li>
+                <Link href="/newsletter" className={linkClass}>
+                  Newsletter
+                </Link>
+              </li>
+              <li>
                 <Link
                   href="/sign-in"
                   data-umami-event="sign-in-click"

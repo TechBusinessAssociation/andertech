@@ -103,6 +103,7 @@ Important about resource links: **that list is a convenience directory, not real
 | Members-only resources | Files live in Google Drive (or SharePoint) with restricted sharing. `/members` shows a directory of links grouped by category (edited on `/admin`), not the files themselves. |
 | Members-only events | Vercel Postgres (`events` table), edited on `/admin`, shown on `/members/events`. The public calendar above is separate. |
 | Membership list | Vercel Postgres, edited via `/admin`. Not in this repo -- see "Members area" above. |
+| Newsletter | Public page at `/newsletter`, edited on `/admin/newsletter` by admins and members with the **Newsletter editor** role (granted on `/admin/members`; that role opens only the newsletter section). Create an issue (title, date, and an optional intro above and closing below its items), add items, rank them with Move up / Move down, then Publish (issues are drafts until then). Tags are created while writing an item or on `/admin/newsletter/tags`. Text lives in Vercel Postgres (`newsletter_*` tables from `schema.sql`); images live in **Vercel Blob** (Vercel dashboard > Storage > Create > Blob, connected to this project, which sets `BLOB_READ_WRITE_TOKEN` automatically). The "Editor's take" is shown only to signed-in members; the author name is saved for the board's records and is not shown on the site. No emails are sent. |
 | Analytics | Umami Cloud (cloud.umami.is); website ID in `content/site.ts`. See "Analytics" above. |
 | Domain | Not set up yet. Using the free `*.vercel.app` address. |
 

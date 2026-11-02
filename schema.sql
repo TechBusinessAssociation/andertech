@@ -180,3 +180,77 @@ create table if not exists showcase_projects (
 );
 
 create index if not exists showcase_projects_member_idx on showcase_projects (member_id);
+
+-- --- Newsletter (public /newsletter page, edited on /admin/newsletter) ---
+-- An issue is a titled, dated list of news items with an optional intro above
+-- them and closing below them; the editor ranks the items (position 1 shows
+-- first). Issues start as drafts and only show on the public
+-- page once published. title, body, tags and the image of an item are public;
+-- editors_take is shown only to signed-in approved members (the query in
+-- src/lib/newsletter-db.ts never selects it for anyone else). author_name is
+-- backend-only on purpose: it is stored so repeat writers can be picked again
+-- on /admin/newsletter, but no public or members page displays it yet. The
+-- image lives in Vercel Blob; only its public URL is stored here.
+-- Limits (lengths, tags per item) are enforced in the app,
+-- src/lib/newsletter.ts; the checks below are only a backstop. Safe to re-run.
+--
+-- NOTE: an earlier draft of this feature had a different newsletter_items
+-- table (tags in an array, no issues). If you already ran that, run
+-- `drop table newsletter_items;` once first (it only held test data), then
+-- run this again.
+create table if not exists newsletter_issues (
+  id bigserial primary key,
+  title text not null check (char_length(title) <= 150),
+  published_on date not null default current_date,
+  published boolean not null default false,
+  intro text not null default '' check (char_length(intro) <= 3000),
+  closing text not null default '' check (char_length(closing) <= 3000),
+  created_at timestamptz not null default now()
+);
+
+-- intro and closing were added after the first version of this table, so they
+-- are also added separately for a database that already has it (no-op otherwise).
+alter table newsletter_issues add column if not exists intro text not null default '' check (char_length(intro) <= 3000);
+alter table newsletter_issues add column if not exists closing text not null default '' check (char_length(closing) <= 3000);
+
+create index if not exists newsletter_issues_published_idx
+  on newsletter_issues (published_on desc, id desc);
+
+create table if not exists newsletter_items (
+  id bigserial primary key,
+  issue_id bigint not null references newsletter_issues(id) on delete cascade,
+  position int not null,
+  title text not null check (char_length(title) <= 150),
+  body text not null check (char_length(body) <= 8000),
+  editors_take text not null default '' check (char_length(editors_take) <= 4000),
+  image_url text,
+  image_alt text not null default '',
+  author_name text not null default '',
+  created_at timestamptz not null default now()
+);
+
+create index if not exists newsletter_items_issue_idx
+  on newsletter_items (issue_id, position, id);
+
+-- Tags are created by editors (while writing an item, or on
+-- /admin/newsletter/tags) and kept here so items can later be found by tag.
+-- One tag name exists once, whatever its capitalisation. Deleting a tag
+-- removes it from every item; deleting an item removes its tag links only.
+create table if not exists newsletter_tags (
+  id bigserial primary key,
+  name text not null check (char_length(name) between 1 and 24),
+  created_at timestamptz not null default now()
+);
+
+create unique index if not exists newsletter_tags_name_key
+  on newsletter_tags (lower(name));
+
+create table if not exists newsletter_item_tags (
+  item_id bigint not null references newsletter_items(id) on delete cascade,
+  tag_id bigint not null references newsletter_tags(id) on delete cascade,
+  primary key (item_id, tag_id)
+);
+
+-- The primary key finds "tags of an item"; this finds "items with a tag".
+create index if not exists newsletter_item_tags_tag_idx
+  on newsletter_item_tags (tag_id, item_id);

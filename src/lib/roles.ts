@@ -1,6 +1,6 @@
 // The fixed list of member roles. To add one, add it here (and give it a
 // label); the /admin/members page and the database pick it up from this list.
-export const ROLES = ["club-member", "admin"] as const;
+export const ROLES = ["club-member", "admin", "newsletter_admin"] as const;
 
 export type Role = (typeof ROLES)[number];
 
@@ -9,6 +9,7 @@ export const DEFAULT_ROLE: Role = "club-member";
 export const ROLE_LABELS: Record<Role, string> = {
   "club-member": "Club member",
   admin: "Admin",
+  newsletter_admin: "Newsletter editor",
 };
 
 export function isRole(value: string): value is Role {

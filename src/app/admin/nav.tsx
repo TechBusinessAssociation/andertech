@@ -10,6 +10,10 @@ const linkBase =
 
 type Item = { href: string; label: string; badge?: "requests" };
 
+// Newsletter editors see only this item; full admins see everything.
+
+const NEWSLETTER = "/admin/newsletter";
+
 const items: (Item | { group: string; items: Item[] })[] = [
   { href: "/admin/members", label: "Members" },
   { href: "/admin/requests", label: "Requests", badge: "requests" },
@@ -22,10 +26,21 @@ const items: (Item | { group: string; items: Item[] })[] = [
     ],
   },
   { href: "/admin/events", label: "Events" },
+  { href: NEWSLETTER, label: "Newsletter" },
 ];
 
-export function AdminNav({ pendingRequests }: { pendingRequests: number }) {
+export function AdminNav({
+  pendingRequests,
+  admin,
+}: {
+  pendingRequests: number;
+  admin: boolean;
+}) {
   const pathname = usePathname();
+  // Newsletter editors only get the newsletter item; admins get everything.
+  const visible = admin
+    ? items
+    : items.filter((item) => "href" in item && item.href === NEWSLETTER);
 
   function NavLink({
     href,
@@ -63,7 +78,7 @@ export function AdminNav({ pendingRequests }: { pendingRequests: number }) {
       aria-label="Admin"
       className="-mx-1 flex gap-1 overflow-x-auto px-1 md:mx-0 md:flex-col md:overflow-visible md:px-0"
     >
-      {items.map((item) =>
+      {visible.map((item) =>
         "group" in item ? (
           <div
             key={item.group}
