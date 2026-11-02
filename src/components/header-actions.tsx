@@ -124,6 +124,8 @@ export function HeaderActions() {
             members it moves into the account menu there. */}
         <Link
           href="/newsletter"
+          data-umami-event="newsletter-click"
+          data-umami-event-from="header"
           aria-current={onNewsletter ? "page" : undefined}
           className={`${textLink} ${status.signedIn ? "hidden sm:inline-block" : ""} ${
             onNewsletter ? textCurrent : textIdle
@@ -180,7 +182,12 @@ export function HeaderActions() {
                 </svg>
                 Members
               </Link>
-              <Link href="/newsletter" className={menuItem}>
+              <Link
+                href="/newsletter"
+                data-umami-event="newsletter-click"
+                data-umami-event-from="menu"
+                className={menuItem}
+              >
                 <svg {...svgProps} className={menuIcon}>
                   <path d="M3 3h8v10H4a1 1 0 0 1-1-1V3Zm8 3h2v6a1 1 0 0 1-1 1M5.5 6h3M5.5 8.5h3" />
                 </svg>
