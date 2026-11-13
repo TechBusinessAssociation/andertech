@@ -1,3 +1,4 @@
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { TrackEvent } from "@/components/track-event";
@@ -10,6 +11,7 @@ import {
   getUpcomingEvents,
   isApprovedMember,
 } from "@/lib/members-db";
+import { blocksEmbedCookies } from "@/lib/blocks-embed-cookies";
 import { getShowcaseProjects } from "@/lib/showcase-db";
 import { site } from "../../../content/site";
 import { FooterCards } from "./_components/footer-cards";
@@ -38,11 +40,14 @@ async function loadTab(tab: TabKey, dq: string) {
       return { tab, groups: await getResourceGroups(tab) } as const;
     case "recruiting":
     default: {
-      const [recruiting, groups] = await Promise.all([
+      const [recruiting, groups, h] = await Promise.all([
         getRecruitingPage(),
         getResourceGroups("recruiting"),
+        headers(),
       ]);
-      return { tab: "recruiting" as const, recruiting, groups };
+      // Safari/iOS can't sign in to Looker inside an iframe; see the helper.
+      const embedBlocked = blocksEmbedCookies(h.get("user-agent"));
+      return { tab: "recruiting" as const, recruiting, groups, embedBlocked };
     }
   }
 }
