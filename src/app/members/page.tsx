@@ -1,6 +1,7 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
+import { displayFont } from "@/components/home/ui";
 import { TrackEvent } from "@/components/track-event";
 import {
   getDirectoryMembers,
@@ -14,6 +15,7 @@ import {
 import { blocksEmbedCookies } from "@/lib/blocks-embed-cookies";
 import { getShowcaseProjects } from "@/lib/showcase-db";
 import { site } from "../../../content/site";
+import { AtAGlance } from "./_components/at-a-glance";
 import { FooterCards } from "./_components/footer-cards";
 import { Hero } from "./_components/hero";
 import { isTabKey, MemberTabs, type TabKey } from "./_components/member-tabs";
@@ -95,12 +97,14 @@ export default async function MembersPage({ searchParams }: Props) {
   const tabData = await loadTab(tab, dq);
 
   return (
-    <main className="flex-1">
+    // displayFont: the Bricolage face for the greeting and the lead highlight.
+    <main className={`${displayFont.variable} flex-1`}>
       <TrackEvent name="members-tab-view" data={{ tab }} />
       {tab === "directory" && dq && <TrackEvent name="directory-search" />}
       <Hero firstName={firstName} next={events[0] ?? null} />
 
       <div className="mx-auto max-w-5xl px-5 pb-10">
+        <AtAGlance events={events} profile={profile} />
         <MemberTabs {...tabData} />
         <NextUp events={events} />
         <FooterCards

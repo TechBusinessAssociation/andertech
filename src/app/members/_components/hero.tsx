@@ -38,7 +38,7 @@ export function Hero({
           </span>
           <h1
             id="hello"
-            className="mt-3 text-4xl font-semibold leading-[1.05] tracking-tight text-balance md:text-5xl"
+            className="mt-3 font-display text-4xl font-bold leading-[1.02] tracking-[-0.03em] text-balance md:text-5xl"
           >
             {firstName ? `Welcome back, ${firstName}.` : "Welcome back."}
           </h1>
