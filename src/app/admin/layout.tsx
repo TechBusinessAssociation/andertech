@@ -8,7 +8,7 @@ import { AdminNav } from "./nav";
 // security boundary: layouts don't re-render on client-side navigation, so
 // every /admin page and every admin server action calls requireAdmin() itself.
 export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
-  const { email, admin } = await getAdminAccess();
+  const { email, admin, newsletter, recruiting } = await getAdminAccess();
   // The pending badge is only for full admins (the Requests page is theirs).
   const pendingRequests = admin ? await countPendingRequests() : 0;
 
@@ -23,7 +23,12 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
             </p>
           </div>
 
-          <AdminNav pendingRequests={pendingRequests} admin={admin} />
+          <AdminNav
+            pendingRequests={pendingRequests}
+            admin={admin}
+            newsletter={newsletter}
+            recruiting={recruiting}
+          />
 
           <div className="flex gap-4 text-sm md:flex-col md:gap-2">
             <Link

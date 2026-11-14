@@ -1,10 +1,11 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
+import { displayFont } from "@/components/home/ui";
 import { TrackEvent } from "@/components/track-event";
 import {
   getDirectoryMembers,
-  getFeaturedResources,
+  getHighlights,
   getMemberProfile,
   getRecruitingPage,
   getResourceGroups,
@@ -14,11 +15,11 @@ import {
 import { blocksEmbedCookies } from "@/lib/blocks-embed-cookies";
 import { getShowcaseProjects } from "@/lib/showcase-db";
 import { site } from "../../../content/site";
+import { AtAGlance } from "./_components/at-a-glance";
 import { FooterCards } from "./_components/footer-cards";
 import { Hero } from "./_components/hero";
 import { isTabKey, MemberTabs, type TabKey } from "./_components/member-tabs";
 import { NextUp } from "./_components/next-up";
-import { StartHere } from "./_components/start-here";
 
 type Props = {
   searchParams: Promise<{ tab?: string; dq?: string }>;
@@ -36,18 +37,30 @@ async function loadTab(tab: TabKey, dq: string) {
       return { tab, members: await getDirectoryMembers(), dq } as const;
     case "showcase":
       return { tab, projects: await getShowcaseProjects() } as const;
-    case "whats-new":
-      return { tab, groups: await getResourceGroups(tab) } as const;
+    case "whats-new": {
+      const [groups, highlights] = await Promise.all([
+        getResourceGroups(tab),
+        getHighlights(tab),
+      ]);
+      return { tab, groups, highlights } as const;
+    }
     case "recruiting":
     default: {
-      const [recruiting, groups, h] = await Promise.all([
+      const [recruiting, groups, highlights, h] = await Promise.all([
         getRecruitingPage(),
         getResourceGroups("recruiting"),
+        getHighlights("recruiting"),
         headers(),
       ]);
       // Safari/iOS can't sign in to Looker inside an iframe; see the helper.
       const embedBlocked = blocksEmbedCookies(h.get("user-agent"));
-      return { tab: "recruiting" as const, recruiting, groups, embedBlocked };
+      return {
+        tab: "recruiting" as const,
+        recruiting,
+        groups,
+        highlights,
+        embedBlocked,
+      };
     }
   }
 }
@@ -66,8 +79,7 @@ export default async function MembersPage({ searchParams }: Props) {
   }
 
   const params = await searchParams;
-  const [featured, events, profile] = await Promise.all([
-    getFeaturedResources(),
+  const [events, profile] = await Promise.all([
     getUpcomingEvents(),
     getMemberProfile(email),
   ]);
@@ -85,15 +97,16 @@ export default async function MembersPage({ searchParams }: Props) {
   const tabData = await loadTab(tab, dq);
 
   return (
-    <main className="flex-1">
+    // displayFont: the Bricolage face for the greeting and the lead highlight.
+    <main className={`${displayFont.variable} flex-1`}>
       <TrackEvent name="members-tab-view" data={{ tab }} />
       {tab === "directory" && dq && <TrackEvent name="directory-search" />}
       <Hero firstName={firstName} next={events[0] ?? null} />
 
       <div className="mx-auto max-w-5xl px-5 pb-10">
+        <AtAGlance events={events} profile={profile} />
         <MemberTabs {...tabData} />
         <NextUp events={events} />
-        <StartHere resources={featured} />
         <FooterCards
           contactEmail={site.contactEmail}
           subjectPrefix={site.feedbackSubject}
