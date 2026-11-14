@@ -65,14 +65,16 @@ function TabsNav({ active }: { active: TabKey }) {
 
 function RecruitingTab({
   dashboardUrl,
+  embedBlocked,
   groups,
 }: {
   dashboardUrl: string | null;
+  embedBlocked: boolean;
   groups: ResourceGroup[];
 }) {
   return (
     <div className="grid gap-5">
-      {dashboardUrl && (
+      {dashboardUrl && !embedBlocked && (
         <div className="overflow-hidden rounded-2xl border border-zinc-200 shadow-sm dark:border-zinc-800">
           <iframe
             src={dashboardUrl}
@@ -80,6 +82,31 @@ function RecruitingTab({
             className="aspect-video w-full"
             loading="lazy"
           />
+        </div>
+      )}
+      {dashboardUrl && embedBlocked && (
+        // Safari/iOS block Google's sign-in cookie inside the iframe, so the
+        // embed would only show "Can't access report". Opened in its own tab
+        // the report is first-party and works (see blocks-embed-cookies.ts).
+        <div className="flex flex-col items-start gap-3 rounded-2xl border border-zinc-200 p-5 shadow-sm dark:border-zinc-800">
+          <div>
+            <h3 className="font-semibold">Recruiting dashboard</h3>
+            <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+              The dashboard can&apos;t be shown inside this page on your
+              browser or device. It
+              opens in a new tab with your Google account.
+            </p>
+          </div>
+          <a
+            href={dashboardUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            data-umami-event="recruiting-dashboard-open"
+            className="inline-flex min-h-11 items-center rounded-full bg-brand-navy px-5 font-semibold text-white hover:bg-brand-blue dark:bg-brand-gold dark:text-brand-navy dark:hover:bg-brand-cream"
+          >
+            Open dashboard
+            <span aria-hidden="true" className="ml-2">&#8599;</span>
+          </a>
         </div>
       )}
       <CategoryCards
@@ -248,7 +275,12 @@ function ShowcaseTab({ projects }: { projects: ShowcaseProject[] }) {
 }
 
 type Props =
-  | { tab: "recruiting"; recruiting: RecruitingPage; groups: ResourceGroup[] }
+  | {
+      tab: "recruiting";
+      recruiting: RecruitingPage;
+      groups: ResourceGroup[];
+      embedBlocked: boolean;
+    }
   | { tab: "whats-new"; groups: ResourceGroup[] }
   | { tab: "directory"; members: DirectoryMember[]; dq: string }
   | { tab: "showcase"; projects: ShowcaseProject[] };
@@ -268,6 +300,7 @@ export function MemberTabs(props: Props) {
         {props.tab === "recruiting" && (
           <RecruitingTab
             dashboardUrl={props.recruiting.dashboardUrl}
+            embedBlocked={props.embedBlocked}
             groups={props.groups}
           />
         )}
