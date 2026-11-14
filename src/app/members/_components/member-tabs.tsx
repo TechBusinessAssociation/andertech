@@ -1,8 +1,14 @@
 import Link from "next/link";
 import { Icon } from "@/components/icons";
-import type { DirectoryMember, RecruitingPage, ResourceGroup } from "@/lib/members-db";
+import type {
+  DirectoryMember,
+  Highlight,
+  RecruitingPage,
+  ResourceGroup,
+} from "@/lib/members-db";
 import type { ShowcaseProject } from "@/lib/showcase-db";
 import { CategoryCards } from "./category-cards";
+import { Highlights } from "./highlights";
 
 // Four sections above "Next up" on /members: Recruiting resources
 // (default), What's new, Member Directory, AnderTech Showcase. Plain
@@ -67,13 +73,16 @@ function RecruitingTab({
   dashboardUrl,
   embedBlocked,
   groups,
+  highlights,
 }: {
   dashboardUrl: string | null;
   embedBlocked: boolean;
   groups: ResourceGroup[];
+  highlights: Highlight[];
 }) {
   return (
     <div className="grid gap-5">
+      <Highlights items={highlights} section="recruiting" />
       {dashboardUrl && !embedBlocked && (
         <div className="overflow-hidden rounded-2xl border border-zinc-200 shadow-sm dark:border-zinc-800">
           <iframe
@@ -279,9 +288,10 @@ type Props =
       tab: "recruiting";
       recruiting: RecruitingPage;
       groups: ResourceGroup[];
+      highlights: Highlight[];
       embedBlocked: boolean;
     }
-  | { tab: "whats-new"; groups: ResourceGroup[] }
+  | { tab: "whats-new"; groups: ResourceGroup[]; highlights: Highlight[] }
   | { tab: "directory"; members: DirectoryMember[]; dq: string }
   | { tab: "showcase"; projects: ShowcaseProject[] };
 
@@ -302,13 +312,17 @@ export function MemberTabs(props: Props) {
             dashboardUrl={props.recruiting.dashboardUrl}
             embedBlocked={props.embedBlocked}
             groups={props.groups}
+            highlights={props.highlights}
           />
         )}
         {props.tab === "whats-new" && (
-          <CategoryCards
-            groups={props.groups}
-            emptyMessage="No announcements yet. Add a category on /admin/categories (set its tab to What's new), then add resources to it on /admin/resources."
-          />
+          <div className="grid gap-5">
+            <Highlights items={props.highlights} section="whats-new" />
+            <CategoryCards
+              groups={props.groups}
+              emptyMessage="No announcements yet. Add a category on /admin/categories (set its tab to What's new), then add resources to it on /admin/resources."
+            />
+          </div>
         )}
         {props.tab === "directory" && (
           <DirectoryTab members={props.members} dq={props.dq} />

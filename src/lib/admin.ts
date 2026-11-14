@@ -36,3 +36,14 @@ export async function isNewsletterAdmin(
   if (await isAdmin(email)) return true;
   return await hasRole(email, "newsletter_admin");
 }
+
+// May this email edit Recruiting-tab categories and resources (including its
+// highlights)? Yes for full admins, or a member holding 'recruiting_editor'.
+// That role opens ONLY /admin/categories and /admin/resources, and only for
+// the Recruiting tab's rows (see requireResourceEditor). Fails closed.
+export async function isRecruitingEditor(
+  email: string | null | undefined,
+): Promise<boolean> {
+  if (await isAdmin(email)) return true;
+  return await hasRole(email, "recruiting_editor");
+}

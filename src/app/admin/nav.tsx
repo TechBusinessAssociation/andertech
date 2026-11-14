@@ -10,11 +10,16 @@ const linkBase =
 
 type Item = { href: string; label: string; badge?: "requests" };
 
-// Newsletter editors see only this item; full admins see everything.
+// Full admins see everything; editors see only their own sections:
+// newsletter editors the Newsletter item, recruiting editors Categories and
+// Resources (not the dashboard link, which stays admin-only).
 
 const NEWSLETTER = "/admin/newsletter";
+const RECRUITING_EDITOR_ITEMS = ["/admin/categories", "/admin/resources"];
 
-const items: (Item | { group: string; items: Item[] })[] = [
+type Entry = Item | { group: string; items: Item[] };
+
+const items: Entry[] = [
   { href: "/admin/members", label: "Members" },
   { href: "/admin/requests", label: "Requests", badge: "requests" },
   {
@@ -32,15 +37,25 @@ const items: (Item | { group: string; items: Item[] })[] = [
 export function AdminNav({
   pendingRequests,
   admin,
+  newsletter,
+  recruiting,
 }: {
   pendingRequests: number;
   admin: boolean;
+  newsletter: boolean;
+  recruiting: boolean;
 }) {
   const pathname = usePathname();
-  // Newsletter editors only get the newsletter item; admins get everything.
+  const allowed = (href: string) =>
+    (newsletter && href === NEWSLETTER) ||
+    (recruiting && RECRUITING_EDITOR_ITEMS.includes(href));
   const visible = admin
     ? items
-    : items.filter((item) => "href" in item && item.href === NEWSLETTER);
+    : items.flatMap((item): Entry[] => {
+        if ("href" in item) return allowed(item.href) ? [item] : [];
+        const children = item.items.filter((child) => allowed(child.href));
+        return children.length > 0 ? [{ ...item, items: children }] : [];
+      });
 
   function NavLink({
     href,

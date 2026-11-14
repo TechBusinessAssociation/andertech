@@ -1,7 +1,12 @@
 import Link from "next/link";
 import { getAdminResources, getCategories } from "@/lib/members-db";
-import { requireAdmin } from "@/lib/require-admin";
-import { ADMIN_SECTIONS, SECTION_LABELS } from "@/lib/tab-sections";
+import {
+  HIGHLIGHT_NOTE_MAX,
+  HIGHLIGHT_RANKS,
+  MAX_HIGHLIGHTS,
+} from "@/lib/highlights";
+import { requireResourceEditor } from "@/lib/require-admin";
+import { SECTION_LABELS } from "@/lib/tab-sections";
 import { removeResourceAction, saveResourceAction } from "./actions";
 import {
   Badge,
@@ -29,6 +34,12 @@ type Props = {
 const NOTICES: Record<string, string> = {
   invalid:
     "Not saved: a resource needs a label, a category, and a link starting with http:// or https://.",
+  "not-allowed":
+    "Not saved: you can only edit resources in the Recruiting resources tab.",
+  "highlight-invalid": `Not saved: a highlight needs a position and a reason (up to ${HIGHLIGHT_NOTE_MAX} characters).`,
+  "highlight-full": `Not saved: that tab already has ${MAX_HIGHLIGHTS} highlights. Remove one first (edit it and untick "Highlight").`,
+  "highlight-taken":
+    "Not saved: another highlight on that tab already has this position. Pick a free one, or move the other one first.",
 };
 
 function EyeIcon() {
@@ -50,13 +61,25 @@ function EyeIcon() {
 }
 
 export default async function AdminResourcesPage({ searchParams }: Props) {
-  await requireAdmin();
+  // Admins see every tab; recruiting editors only Recruiting resources.
+  const { sections } = await requireResourceEditor();
 
   const { edit, notice } = await searchParams;
-  const [resources, categories] = await Promise.all([
-    getAdminResources(),
+  const [resources, allCategories] = await Promise.all([
+    getAdminResources(sections),
     getCategories(),
   ]);
+  const categories = allCategories.filter((c) => sections.includes(c.section));
+  // Current highlights per tab, shown next to the highlight fields so the
+  // editor can see which positions are free.
+  const highlightsBySection = sections
+    .map((section) => ({
+      section,
+      items: resources
+        .filter((r) => r.section === section && r.highlight_rank !== null)
+        .sort((a, b) => Number(a.highlight_rank) - Number(b.highlight_rank)),
+    }))
+    .filter((group) => group.items.length > 0);
   // Postgres returns bigserial ids as strings, hence Number().
   const editing = edit
     ? resources.find((resource) => Number(resource.id) === Number(edit))
@@ -134,7 +157,7 @@ export default async function AdminResourcesPage({ searchParams }: Props) {
                   <option value="" disabled>
                     Choose a category
                   </option>
-                  {ADMIN_SECTIONS.map((section) => {
+                  {sections.map((section) => {
                     const inSection = categories.filter(
                       (c) => c.section === section,
                     );
@@ -161,15 +184,64 @@ export default async function AdminResourcesPage({ searchParams }: Props) {
                 />
               </label>
             </div>
-            <label className="flex items-center gap-2 text-sm">
-              <input
-                type="checkbox"
-                name="featured"
-                defaultChecked={editing?.featured ?? false}
-              />
-              Pin to &quot;Start here&quot; on the members home page (best with
-              three or fewer)
-            </label>
+            <fieldset className="flex flex-col gap-3 rounded-xl border border-zinc-200 p-4 dark:border-zinc-800">
+              <legend className="px-1 text-sm font-semibold">Highlight</legend>
+              <label className="flex items-center gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  name="highlight"
+                  defaultChecked={editing?.highlight_rank != null}
+                />
+                Highlight at the top of its tab (up to {MAX_HIGHLIGHTS} per
+                tab)
+              </label>
+              <div className="flex flex-col gap-3 sm:flex-row">
+                <label className={`${fieldLabelClass} sm:flex-1`}>
+                  Why we&apos;re highlighting it
+                  <textarea
+                    name="highlight_note"
+                    rows={2}
+                    maxLength={HIGHLIGHT_NOTE_MAX}
+                    defaultValue={editing?.highlight_note ?? ""}
+                    placeholder="The best one-page guide to PM interview loops we've found."
+                    className={`${inputClass} font-normal`}
+                  />
+                </label>
+                <label className={`${fieldLabelClass} sm:w-40`}>
+                  Position
+                  <select
+                    name="highlight_rank"
+                    defaultValue={editing?.highlight_rank ?? 1}
+                    className={`${inputClass} font-normal`}
+                  >
+                    {HIGHLIGHT_RANKS.map((rank) => (
+                      <option key={rank} value={rank}>
+                        {rank}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              </div>
+              <p className="text-xs text-zinc-600 dark:text-zinc-400">
+                Shown as a card above that tab&apos;s dashboard and categories;
+                the resource also stays in its category. Required when
+                highlighted, up to {HIGHLIGHT_NOTE_MAX} characters.
+              </p>
+              {highlightsBySection.length > 0 && (
+                <ul className="text-xs text-zinc-600 dark:text-zinc-400">
+                  {highlightsBySection.map(({ section, items }) => (
+                    <li key={section}>
+                      <span className="font-semibold">
+                        {SECTION_LABELS[section]}:
+                      </span>{" "}
+                      {items
+                        .map((r) => `${r.highlight_rank}. ${r.label}`)
+                        .join(", ")}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </fieldset>
             <div className="flex items-center gap-3">
               <button type="submit" className={primaryButtonClass}>
                 {editing ? "Save changes" : "Add resource"}
@@ -227,9 +299,11 @@ export default async function AdminResourcesPage({ searchParams }: Props) {
                     >
                       {resource.label}
                     </a>
-                    {resource.featured && (
+                    {resource.highlight_rank != null && (
                       <span className="ml-2 align-middle">
-                        <Badge tone="brand">Pinned</Badge>
+                        <Badge tone="brand">
+                          Highlight {resource.highlight_rank}
+                        </Badge>
                       </span>
                     )}
                   </td>

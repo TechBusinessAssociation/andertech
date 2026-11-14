@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { getCategoriesWithCounts } from "@/lib/members-db";
-import { requireAdmin } from "@/lib/require-admin";
-import { ADMIN_SECTIONS, SECTION_LABELS } from "@/lib/tab-sections";
+import { requireResourceEditor } from "@/lib/require-admin";
+import { SECTION_LABELS } from "@/lib/tab-sections";
 import { removeCategoryAction, saveCategoryAction } from "./actions";
 import {
   Badge,
@@ -30,13 +30,18 @@ const NOTICES: Record<string, string> = {
   "in-use":
     "That category still has resources in it. Move or remove them first.",
   "name-required": "A category needs a name.",
+  "not-allowed":
+    "Not saved: you can only edit categories in the Recruiting resources tab.",
 };
 
 export default async function AdminCategoriesPage({ searchParams }: Props) {
-  await requireAdmin();
+  // Admins see every tab; recruiting editors only Recruiting resources.
+  const { sections } = await requireResourceEditor();
 
   const { edit, notice } = await searchParams;
-  const categories = await getCategoriesWithCounts();
+  const categories = (await getCategoriesWithCounts()).filter((c) =>
+    sections.includes(c.section),
+  );
   // Postgres returns bigserial ids as strings, hence Number().
   const editing = edit
     ? categories.find((category) => Number(category.id) === Number(edit))
@@ -96,7 +101,7 @@ export default async function AdminCategoriesPage({ searchParams }: Props) {
               defaultValue={editing?.section ?? "recruiting"}
               className={`${inputClass} font-normal`}
             >
-              {ADMIN_SECTIONS.map((section) => (
+              {sections.map((section) => (
                 <option key={section} value={section}>
                   {SECTION_LABELS[section]}
                 </option>

@@ -1,4 +1,5 @@
 import { sql } from "@vercel/postgres";
+import { MAX_HIGHLIGHTS } from "@/lib/highlights";
 import type { Role } from "@/lib/roles";
 import type { Section } from "@/lib/tab-sections";
 
@@ -143,7 +144,6 @@ export type MemberResource = {
   description: string | null;
   category_id: number | null;
   category_name: string | null;
-  featured: boolean;
 };
 
 export type ResourceGroup = {
@@ -165,7 +165,7 @@ export async function getResourceGroups(
 ): Promise<ResourceGroup[]> {
   try {
     const { rows } = await sql`
-      select r.id, r.label, r.url, r.description, r.category_id, r.featured,
+      select r.id, r.label, r.url, r.description, r.category_id,
              c.name as category_name, c.description as category_description
       from resources r
       left join categories c on c.id = r.category_id
@@ -215,7 +215,7 @@ export async function getCategoryDetail(
     if (!category) return null;
 
     const { rows } = await sql`
-      select id, label, url, description, category_id, featured
+      select id, label, url, description, category_id
       from resources
       where category_id = ${id}
       order by sort_order asc, label asc
@@ -232,19 +232,24 @@ export async function getCategoryDetail(
   }
 }
 
-// Resources the board pinned to the "Start here" row, in category order.
-export async function getFeaturedResources(): Promise<MemberResource[]> {
+// The 1-3 resources highlighted on one tab (highlight_rank set on
+// /admin/resources), in rank order. A resource's tab is its category's
+// section, so highlights follow the category if it moves. The limit is a
+// backstop; the save action already refuses a 4th.
+export type Highlight = MemberResource & { highlight_note: string };
+
+export async function getHighlights(section: Section): Promise<Highlight[]> {
   try {
     const { rows } = await sql`
-      select r.id, r.label, r.url, r.description, r.category_id, r.featured,
-             c.name as category_name
+      select r.id, r.label, r.url, r.description, r.category_id,
+             r.highlight_note, c.name as category_name
       from resources r
-      left join categories c on c.id = r.category_id
-      where r.featured
-      order by c.sort_order asc nulls last, r.sort_order asc, r.label asc
-      limit 6
+      join categories c on c.id = r.category_id
+      where c.section = ${section} and r.highlight_rank is not null
+      order by r.highlight_rank asc, r.label asc
+      limit ${MAX_HIGHLIGHTS}
     `;
-    return rows as MemberResource[];
+    return rows as Highlight[];
   } catch {
     return [];
   }
@@ -516,49 +521,95 @@ export async function removeCategory(id: number): Promise<boolean> {
   return (result.rowCount ?? 0) > 0;
 }
 
-export type AdminResource = MemberResource & { sort_order: number };
+export type AdminResource = MemberResource & {
+  sort_order: number;
+  // The tab this resource shows under (its category's section). Resources
+  // with no category show under Recruiting, as on /members.
+  section: Section;
+  highlight_rank: number | null;
+  highlight_note: string | null;
+};
 
-export async function getAdminResources(): Promise<AdminResource[]> {
+// Only the given tabs' resources (an editor's scope; admins pass them all).
+export async function getAdminResources(
+  sections: readonly Section[],
+): Promise<AdminResource[]> {
   const { rows } = await sql`
     select r.id, r.label, r.url, r.description, r.category_id, r.sort_order,
-           r.featured, c.name as category_name
+           r.highlight_rank, r.highlight_note, c.name as category_name,
+           coalesce(c.section, 'recruiting') as section
     from resources r
     left join categories c on c.id = r.category_id
     order by c.sort_order asc nulls last, c.name asc, r.sort_order asc, r.label asc
   `;
-  return rows as AdminResource[];
+  return (rows as AdminResource[]).filter((r) => sections.includes(r.section));
 }
 
-export async function addResource(input: {
+// Which tab a category belongs to, or null if it doesn't exist. The
+// editor-scope checks in the admin actions use these two.
+export async function getCategorySection(id: number): Promise<Section | null> {
+  const { rows } = await sql`select section from categories where id = ${id}`;
+  return (rows[0]?.section as Section | undefined) ?? null;
+}
+
+export async function getResourceSection(id: number): Promise<Section | null> {
+  const { rows } = await sql`
+    select coalesce(c.section, 'recruiting') as section
+    from resources r
+    left join categories c on c.id = r.category_id
+    where r.id = ${id}
+  `;
+  return (rows[0]?.section as Section | undefined) ?? null;
+}
+
+// Can `rank` be used for a highlight in `section`? "full" when the tab already
+// has MAX_HIGHLIGHTS, "taken" when another resource there holds that rank.
+// `exceptId` is the resource being edited (it doesn't count against itself).
+export async function checkHighlightSlot(
+  section: Section,
+  rank: number,
+  exceptId: number | null,
+): Promise<"ok" | "full" | "taken"> {
+  const { rows } = await sql`
+    select r.highlight_rank
+    from resources r
+    join categories c on c.id = r.category_id
+    where c.section = ${section} and r.highlight_rank is not null
+      and r.id <> ${exceptId ?? -1}
+  `;
+  if (rows.some((row) => Number(row.highlight_rank) === rank)) return "taken";
+  if (rows.length >= MAX_HIGHLIGHTS) return "full";
+  return "ok";
+}
+
+export type ResourceInput = {
   label: string;
   url: string;
   description: string;
   categoryId: number;
   sortOrder: number;
-  featured: boolean;
-}): Promise<boolean> {
+  // null = not highlighted. Validated by the caller (validHighlight).
+  highlight: { rank: number; note: string } | null;
+};
+
+export async function addResource(input: ResourceInput): Promise<boolean> {
   const label = input.label.trim();
   const url = cleanUrl(input.url);
   if (!label || !url) return false;
   await sql`
     insert into resources
-      (label, url, description, category_id, sort_order, featured)
+      (label, url, description, category_id, sort_order,
+       highlight_rank, highlight_note)
     values (${label}, ${url}, ${emptyToNull(input.description)},
-            ${input.categoryId}, ${input.sortOrder}, ${input.featured})
+            ${input.categoryId}, ${input.sortOrder},
+            ${input.highlight?.rank ?? null}, ${input.highlight?.note ?? null})
   `;
   return true;
 }
 
 export async function updateResource(
   id: number,
-  input: {
-    label: string;
-    url: string;
-    description: string;
-    categoryId: number;
-    sortOrder: number;
-    featured: boolean;
-  },
+  input: ResourceInput,
 ): Promise<boolean> {
   const label = input.label.trim();
   const url = cleanUrl(input.url);
@@ -568,7 +619,8 @@ export async function updateResource(
     set label = ${label}, url = ${url},
         description = ${emptyToNull(input.description)},
         category_id = ${input.categoryId}, sort_order = ${input.sortOrder},
-        featured = ${input.featured}
+        highlight_rank = ${input.highlight?.rank ?? null},
+        highlight_note = ${input.highlight?.note ?? null}
     where id = ${id}
   `;
   return true;

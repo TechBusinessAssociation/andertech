@@ -71,11 +71,26 @@ select email, 'club-member' from members m
 where not exists (select 1 from member_roles r where r.email = m.email)
 on conflict do nothing;
 
--- --- "Start here" pins ---
--- Resources with featured = true appear as the big cards at the top of the
--- members home page. Set on /admin/resources. Safe to re-run.
+-- --- "Start here" pins (retired) ---
+-- The old "Start here" row was replaced by per-tab highlights (below). The
+-- site no longer reads or writes this column; it is kept only so re-running
+-- this file stays harmless. Safe to drop later.
 
 alter table resources add column if not exists featured boolean not null default false;
+
+-- --- Tab highlights ---
+-- Up to 3 resources per members tab (a resource's tab is its category's
+-- section) shown as cards at the top of that tab, with a short note on why.
+-- highlight_rank null = not highlighted. The "max 3 per tab" and "one
+-- resource per position" rules span two tables, so the /admin/resources save
+-- action enforces them (checkHighlightSlot); these checks are the backstop
+-- for a single row. Safe to re-run.
+
+alter table resources
+  add column if not exists highlight_rank smallint
+    check (highlight_rank between 1 and 3),
+  add column if not exists highlight_note text
+    check (char_length(highlight_note) <= 200);
 
 -- --- Account requests ---
 -- Someone asks for an account on /request-access (name + @g.ucla.edu email);

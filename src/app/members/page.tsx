@@ -4,7 +4,7 @@ import { auth } from "@/auth";
 import { TrackEvent } from "@/components/track-event";
 import {
   getDirectoryMembers,
-  getFeaturedResources,
+  getHighlights,
   getMemberProfile,
   getRecruitingPage,
   getResourceGroups,
@@ -18,7 +18,6 @@ import { FooterCards } from "./_components/footer-cards";
 import { Hero } from "./_components/hero";
 import { isTabKey, MemberTabs, type TabKey } from "./_components/member-tabs";
 import { NextUp } from "./_components/next-up";
-import { StartHere } from "./_components/start-here";
 
 type Props = {
   searchParams: Promise<{ tab?: string; dq?: string }>;
@@ -36,18 +35,30 @@ async function loadTab(tab: TabKey, dq: string) {
       return { tab, members: await getDirectoryMembers(), dq } as const;
     case "showcase":
       return { tab, projects: await getShowcaseProjects() } as const;
-    case "whats-new":
-      return { tab, groups: await getResourceGroups(tab) } as const;
+    case "whats-new": {
+      const [groups, highlights] = await Promise.all([
+        getResourceGroups(tab),
+        getHighlights(tab),
+      ]);
+      return { tab, groups, highlights } as const;
+    }
     case "recruiting":
     default: {
-      const [recruiting, groups, h] = await Promise.all([
+      const [recruiting, groups, highlights, h] = await Promise.all([
         getRecruitingPage(),
         getResourceGroups("recruiting"),
+        getHighlights("recruiting"),
         headers(),
       ]);
       // Safari/iOS can't sign in to Looker inside an iframe; see the helper.
       const embedBlocked = blocksEmbedCookies(h.get("user-agent"));
-      return { tab: "recruiting" as const, recruiting, groups, embedBlocked };
+      return {
+        tab: "recruiting" as const,
+        recruiting,
+        groups,
+        highlights,
+        embedBlocked,
+      };
     }
   }
 }
@@ -66,8 +77,7 @@ export default async function MembersPage({ searchParams }: Props) {
   }
 
   const params = await searchParams;
-  const [featured, events, profile] = await Promise.all([
-    getFeaturedResources(),
+  const [events, profile] = await Promise.all([
     getUpcomingEvents(),
     getMemberProfile(email),
   ]);
@@ -93,7 +103,6 @@ export default async function MembersPage({ searchParams }: Props) {
       <div className="mx-auto max-w-5xl px-5 pb-10">
         <MemberTabs {...tabData} />
         <NextUp events={events} />
-        <StartHere resources={featured} />
         <FooterCards
           contactEmail={site.contactEmail}
           subjectPrefix={site.feedbackSubject}

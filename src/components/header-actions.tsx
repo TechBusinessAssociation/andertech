@@ -55,6 +55,7 @@ export function HeaderActions() {
     signedIn: false,
     admin: false,
     newsletterAdmin: false,
+    recruitingEditor: false,
     name: null as string | null,
   });
 
@@ -69,6 +70,7 @@ export function HeaderActions() {
             signedIn: data?.signedIn === true,
             admin: data?.admin === true,
             newsletterAdmin: data?.newsletterAdmin === true,
+            recruitingEditor: data?.recruitingEditor === true,
             name: typeof data?.name === "string" ? data.name : null,
           });
         }
@@ -79,6 +81,7 @@ export function HeaderActions() {
             signedIn: false,
             admin: false,
             newsletterAdmin: false,
+            recruitingEditor: false,
             name: null,
           });
       });
@@ -114,7 +117,8 @@ export function HeaderActions() {
 
   const onMembers = pathname.startsWith("/members");
   const onNewsletter = pathname.startsWith("/newsletter");
-  const isEditor = status.admin || status.newsletterAdmin;
+  const isEditor =
+    status.admin || status.newsletterAdmin || status.recruitingEditor;
   const mark = initials(status.name);
 
   return (

@@ -1,10 +1,15 @@
 import { redirect } from "next/navigation";
-import { isAdmin } from "@/lib/admin";
 import { getAdminAccess } from "@/lib/require-admin";
 
-// Full admins land on Members; newsletter editors (who can only open the
-// newsletter section) land there instead.
+// Full admins land on Members; editors land on the one section they can open
+// (newsletter editors on Newsletter, recruiting editors on Resources).
 export default async function AdminIndexPage() {
-  const { email } = await getAdminAccess();
-  redirect((await isAdmin(email)) ? "/admin/members" : "/admin/newsletter");
+  const { admin, newsletter } = await getAdminAccess();
+  redirect(
+    admin
+      ? "/admin/members"
+      : newsletter
+        ? "/admin/newsletter"
+        : "/admin/resources",
+  );
 }
